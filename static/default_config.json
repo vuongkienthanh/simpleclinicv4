@@ -1,0 +1,244 @@
+{
+  "clinic_name": "Phòng khám chuyên khoa nhi - Bs xxxx yyyyy zzzz",
+  "clinic_address": "Qui laboriosam corporis non quasi maiores velit culpa",
+  "clinic_phone_number": "0909.xxx.yyy",
+  "doctor_name": "Bs xxxx yyyyy zzzz",
+  "doctor_license": "123456/HCM-CCHN",
+  "checkup_price": 50000,
+  "default_days_for_prescription": 2,
+  "single_sale_units": [
+    "chai",
+    "lọ",
+    "týp",
+    "tube",
+    "tuýp"
+  ],
+  "follow_choices_dict": {
+    "Dấu hiệu chung": "Khám lại khi trẻ có những dấu hiệu sau: co giật, ngủ li bì hay vật vã, bứt rứt, thở mệt, nôn ói nhiều, sốt cao liên tục, tiêu máu",
+    "Dấu hiệu nặng TCM": "Sốt cao ≥39 độ C hay sốt liên tục trên 2 ngày - Giật mình, chới với, hốt hoảng bất thường - Ngủ gà, li bì hay bứt rứt - Run giật tay chân bất thường - Yếu tay chân, ngồi không vững, đi đứng loạng choạng - Thở bất thường: không đều, thở nhanh - Nuốt sặc, thay đổi giọng nói",
+    "Dấu hiệu nặng SXH": "Lừ đừ, bứt rứt - Lạnh tay chân khi trẻ đã hết sốt (thường vào ngày thứ 4, thứ 5 của bệnh) - Đau bụng - Ói nhiều - Chảy máu bất thường: Chảy máu răng, máu mũi, đi cầu phân đen, ói ra máu"
+  },
+  "follow_choices_list": [
+    "Uống nhiều nước",
+    "Ăn nhiều rau củ",
+    "Tập đi vệ sinh"
+  ],
+  "app_font_size": 12,
+  "autochange_prescription_quantity_on_day_spin": true,
+  "ask_print": true,
+  "minimum_drug_quantity_alert": 20,
+  "display_recent_visit_count": -1,
+  "maximize_at_start": false,
+  "outclinic_drug_checkbox": true,
+  "listctrl_header_scale": 1,
+  "print_scale": 1,
+  "preview_scale": 1,
+  "print_price": true,
+  "print_vnote": false,
+  "max_number_of_drugs_in_one_page": 8,
+  "drug_name_print_style": 0,
+  "recheck_date_print_style": 0,
+  "prescription_formats": {
+    "clinic_name": {
+      "bold": false,
+      "italic": false
+    },
+    "clinic_address": {
+      "bold": false,
+      "italic": false
+    },
+    "clinic_phone_number": {
+      "bold": false,
+      "italic": false
+    },
+    "doctor_name": {
+      "bold": true,
+      "italic": false
+    },
+    "doctor_license": {
+      "bold": false,
+      "italic": false
+    },
+    "patient_name": {
+      "bold": false,
+      "italic": true
+    },
+    "weight": {
+      "bold": false,
+      "italic": true
+    },
+    "gender": {
+      "bold": false,
+      "italic": true
+    },
+    "birthdate": {
+      "bold": false,
+      "italic": true
+    },
+    "age": {
+      "bold": false,
+      "italic": true
+    },
+    "diagnosis": {
+      "bold": false,
+      "italic": true
+    },
+    "vnote": {
+      "bold": false,
+      "italic": true
+    },
+    "drug_name": {
+      "bold": false,
+      "italic": false
+    },
+    "drug_quantity": {
+      "bold": false,
+      "italic": false
+    },
+    "drug_usage_note": {
+      "bold": false,
+      "italic": true
+    },
+    "recheck_date": {
+      "bold": false,
+      "italic": false
+    }
+  },
+  "background_colors": {
+    "mainview": [
+      206,
+      219,
+      186
+    ],
+    "queue": [
+      255,
+      255,
+      255
+    ],
+    "seentoday": [
+      255,
+      255,
+      255
+    ],
+    "appointment": [
+      255,
+      255,
+      255
+    ],
+    "visit_list": [
+      255,
+      255,
+      255
+    ],
+    "name": [
+      200,
+      200,
+      200
+    ],
+    "gender": [
+      200,
+      200,
+      200
+    ],
+    "birthdate": [
+      200,
+      200,
+      200
+    ],
+    "age": [
+      200,
+      200,
+      200
+    ],
+    "address": [
+      200,
+      200,
+      200
+    ],
+    "phone": [
+      200,
+      200,
+      200
+    ],
+    "diagnosis": [
+      255,
+      255,
+      255
+    ],
+    "price": [
+      255,
+      255,
+      255
+    ],
+    "drug_list": [
+      255,
+      255,
+      255
+    ],
+    "past_history": [
+      255,
+      255,
+      255
+    ],
+    "visit_note": [
+      255,
+      255,
+      255
+    ],
+    "weight": [
+      255,
+      255,
+      255
+    ],
+    "days": [
+      255,
+      255,
+      255
+    ],
+    "drug_picker": [
+      255,
+      255,
+      255
+    ],
+    "drug_times": [
+      255,
+      255,
+      255
+    ],
+    "drug_dose": [
+      255,
+      255,
+      255
+    ],
+    "drug_quantity": [
+      255,
+      255,
+      255
+    ],
+    "drug_note": [
+      255,
+      255,
+      255
+    ],
+    "recheck": [
+      255,
+      255,
+      255
+    ],
+    "follow": [
+      255,
+      255,
+      255
+    ],
+    "procedure_picker": [
+      255,
+      255,
+      255
+    ],
+    "procedure_list": [
+      255,
+      255,
+      255
+    ]
+  }
+}
