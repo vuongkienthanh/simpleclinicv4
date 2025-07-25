@@ -11,6 +11,9 @@ requires-python = ">=3.13"
 
 dependencies = ["wxpython"]
 
+[dependency-groups]
+dev = ["pyinstaller>=6.14.2"]
+
 [tool.ruff]
 ignore-init-module-imports = true
 extend-exclude = ["**/__init__.py"]
@@ -21,5 +24,9 @@ wxpython = [
     { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.3-cp313-cp313-linux_x86_64.whl", marker = "sys_platform == 'linux'" },
 ]
 
-[dependency-groups]
-dev = ["pyinstaller>=6.14.2"]
+[tool.basedpyright]
+reportAny = false
+reportExplicitAny = false
+reportUnusedCallResult = false
+reportUnknownMemberType = false
+reportMissingTypeStubs = false
