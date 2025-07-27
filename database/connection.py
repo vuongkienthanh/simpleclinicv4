@@ -1,9 +1,10 @@
+from enums import Gender
+from .sql import *
+
 import datetime as dt
+from pathlib import Path
 import sqlite3
 from sqlite3 import Connection
-
-from .models import Gender
-from .sql import *
 
 
 def custom_type_date():
@@ -44,16 +45,16 @@ custom_type_datetime()
 custom_type_gender()
 
 
-def create_connection(path: str) -> Connection:
+def create_connection(path: Path) -> Connection:
     con = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
+    con.execute("UPDATE singleton SET last_open_date = date('now')")
+    con.commit()
     return con
 
 
 def close_connection(con: Connection):
-    con.execute("UPDATE singleton SET last_open_date = date('now')")
-    con.commit()
     con.execute("PRAGMA optimize")
     con.close()
 

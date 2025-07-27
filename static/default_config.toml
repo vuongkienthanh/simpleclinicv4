@@ -1,0 +1,18 @@
+[app]
+font_size = 12
+maximize_at_start = false
+
+[process]
+checkup_price = 50000
+default_follow_note = "Khám lại khi trẻ có những dấu hiệu sau: co giật, ngủ li bì hay vật vã, bứt rứt, thở mệt, nôn ói nhiều, sốt cao liên tục, tiêu máu"
+follow_choices = [
+    { name = "Dấu hiệu nặng TCM", content = "Sốt cao ≥39 độ C hay sốt liên tục trên 2 ngày - Giật mình, chới với, hốt hoảng bất thường - Ngủ gà, li bì hay bứt rứt - Run giật tay chân bất thường - Yếu tay chân, ngồi không vững, đi đứng loạng choạng - Thở bất thường: không đều, thở nhanh - Nuốt sặc, thay đổi giọng nói" },
+    { name = "Dấu hiệu nặng SXH", content = "Lừ đừ, bứt rứt - Lạnh tay chân khi trẻ đã hết sốt (thường vào ngày thứ 4, thứ 5 của bệnh) - Đau bụng - Ói nhiều - Chảy máu bất thường: Chảy máu răng, máu mũi, đi cầu phân đen, ói ra máu" },
+]
+default_days_for_prescription = 3
+min_warehouse_quantity_alert = 20
+display_recent_visit_count = -1
+single_sale_units = ["chai", "lọ", "týp", "tube", "tuýp"]
+
+[theme]
+mainview= "#CEDBBA"

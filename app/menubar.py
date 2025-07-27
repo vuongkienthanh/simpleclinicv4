@@ -78,16 +78,8 @@ class MyMenuBar(wx.MenuBar):
 
         settingMenu = wx.Menu()
 
-        menuSetupConfig: wx.MenuItem = settingMenu.Append(wx.ID_ANY, "Cài đặt")
         menuOpenConfigFolder: wx.MenuItem = settingMenu.Append(
             wx.ID_ANY, "Mở folder cài đặt + dữ liệu"
-        )
-        menuReduceDatabaseSize: wx.MenuItem = settingMenu.Append(
-            wx.ID_ANY, "Thu nhỏ kích thước dữ liệu"
-        )
-        menuBackup: wx.MenuItem = settingMenu.Append(wx.ID_ANY, "Sao lưu dữ liệu")
-        menuResetConfig: wx.MenuItem = settingMenu.Append(
-            wx.ID_ANY, "Khôi phục cài đặt gốc"
         )
 
         self.Append(homeMenu, "&Home")
@@ -115,11 +107,7 @@ class MyMenuBar(wx.MenuBar):
         self.Bind(wx.EVT_MENU, self.onDayReport, menuDayReport)
         self.Bind(wx.EVT_MENU, self.onMonthReport, menuMonthReport)
         self.Bind(wx.EVT_MENU, self.onMonthWarehouseReport, menuMonthWarehouseReport)
-        self.Bind(wx.EVT_MENU, self.onSetup, menuSetupConfig)
         self.Bind(wx.EVT_MENU, self.onOpenConfigFolder, menuOpenConfigFolder)
-        self.Bind(wx.EVT_MENU, self.onReduceDatabaseSize, menuReduceDatabaseSize)
-        self.Bind(wx.EVT_MENU, self.onBackup, menuBackup)
-        self.Bind(wx.EVT_MENU, self.onResetConfig, menuResetConfig)
 
     def onRefresh(self, _):
         mv = cast("mainview.MainView", self.GetFrame())
@@ -344,54 +332,5 @@ class MyMenuBar(wx.MenuBar):
                 mv, monthpickerdialog.GetMonth(), monthpickerdialog.GetYear()
             ).ShowModal()
 
-    def onSetup(self, _):
-        from app.dialogs import SetupDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        SetupDialog(mv).ShowModal()
-
     def onOpenConfigFolder(self, _):
         wx.LaunchDefaultApplication(APP_DIR)
-
-    def onReduceDatabaseSize(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        connection = mv.connection
-        pre = os.path.getsize(connection.path) >> 10
-        connection.execute("VACUUM")
-        connection.commit()
-        post = os.path.getsize(connection.path) >> 10
-        wx.MessageBox(
-            f"Kích thước trước khi thu gọn: {pre} KB"
-            f"Kích thước sau khi thu gọn: {post} KB",
-            "Thu gọn dữ liệu",
-            style=wx.OK_DEFAULT | wx.ICON_NONE,
-        )
-
-    def onBackup(self, _):
-        bak = (
-            os.path.realpath(MY_DATABASE_PATH)
-            + dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-            + ".bak"
-        )
-        if Path(MY_DATABASE_PATH).exists():
-            shutil.copyfile(MY_DATABASE_PATH, bak)
-            wx.MessageBox(
-                f"Sao lưu thành công tại {bak}",
-                "Sao lưu dữ liệu",
-                style=wx.OK_DEFAULT | wx.ICON_NONE,
-            )
-        else:
-            wx.MessageBox("Sao lưu không thành công", "Sao lưu dữ liệu")
-
-    def onResetConfig(self, _):
-        try:
-            bak = CONFIG_PATH + dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + ".bak"
-            shutil.copyfile(CONFIG_PATH, bak)
-            shutil.copyfile(DEFAULT_CONFIG_PATH, CONFIG_PATH)
-            wx.MessageBox(
-                f"Khôi phục cài đặt gốc thành công\nConfig cũ lưu tại {bak}",
-                "Khôi phục cài đặt gốc",
-                style=wx.OK_DEFAULT | wx.ICON_NONE,
-            )
-        except Exception as error:
-            wx.MessageBox(f"Lỗi {error}", "Khôi phục cài đặt gốc")

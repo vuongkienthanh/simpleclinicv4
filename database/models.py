@@ -1,22 +1,9 @@
+from enums import Gender
+
 import datetime as dt
-import enum
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, ClassVar, Self, final
-
-
-class Gender(enum.Enum):
-    m = 0, "Nam"
-    f = 1, "Nữ"
-
-    def __new__(cls, value: int, display_name: str) -> Self:
-        self = object.__new__(cls)
-        self._value_ = value
-        self._add_value_alias_(display_name)  # pyright: ignore[reportAttributeAccessIssue] remove when typeshed include stubs
-        return self
-
-    def __init__(self, value: int, display_name: str):
-        self.display_name = display_name
 
 
 @dataclass(slots=True, frozen=True)
@@ -75,7 +62,7 @@ class Visit(BASEMODEL):
         "days",
         "check_after_n_days",
         "price",
-        "note",
+        "vnote",
         "follow_note",
         "misc_data",
     )
@@ -86,7 +73,7 @@ class Visit(BASEMODEL):
     days: int
     check_after_n_days: int
     price: int
-    note: str | None = None
+    vnote: str | None = None
     follow_note: str | None = None
     misc_data: dict[str, Any] | None = None
 

@@ -16,13 +16,13 @@ CREATE TABLE {Patient.__tablename__} (
 CREATE TABLE {Visit.__tablename__} (
     id INTEGER PRIMARY KEY,
     patient_id INTEGER NOT NULL,
-    exam_datetime TIMESTAMP DEFAULT (datetime('now')),
+    exam_datetime TIMESTAMP DEFAULT (datetime('now', 'localtime')),
     diagnosis TEXT NOT NULL,
     weight INTEGER NOT NULL CHECK( weight > 0 ), -- real weight *10
     days INTEGER NOT NULL CHECK( days >=0 ),
     check_after_n_days INTEGER NOT NULL ( check_after_n_days >= 0 ),
     price INTEGER NOT NULL,
-    note TEXT,
+    vnote TEXT,
     follow_note TEXT,
     misc_data TEXT,
     CONSTRAINT ref_patient FOREIGN KEY (patient_id) REFERENCES {Patient.__tablename__} (id)
@@ -32,7 +32,7 @@ CREATE TABLE {Visit.__tablename__} (
 CREATE TABLE {Queue.__tablename__} (
     id INTEGER PRIMARY KEY,
     patient_id INTEGER UNIQUE NOT NULL,
-    added_datetime TIMESTAMP DEFAULT (datetime('now')),
+    added_datetime TIMESTAMP DEFAULT (datetime('now', 'localtime')),
     CONSTRAINT ref_patient FOREIGN KEY (patient_id) REFERENCES {Patient.__tablename__} (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -115,7 +115,7 @@ CREATE VIEW seentoday_view AS
     FROM {Patient.__tablename__} AS p
     JOIN {Visit.__tablename__} as v
     ON v.patient_id = p.id
-    WHERE date(v.exam_datetime) = date('now')
+    WHERE date(v.exam_datetime) = date('now', 'localtime')
     ORDER BY v.exam_datetime DESC
 ;
 """
@@ -144,5 +144,5 @@ END;
 """
 
 finalized_sql = """
-INSERT OR IGNORE INTO singleton (last_open_date) VALUES (date('now'));
+INSERT OR IGNORE INTO singleton (last_open_date) VALUES (date('now', 'localtime'));
 """
