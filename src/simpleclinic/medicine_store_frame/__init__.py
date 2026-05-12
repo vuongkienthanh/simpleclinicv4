@@ -4,15 +4,16 @@ from lib.models import MedicineStore
 from lib.wx_helper import row, column, get_app
 import sqlite3
 from simpleclinic.medicine_dialog import AddDialog, UpdateDialog
+from ._widget import List
 
 
 class MedicineStoreFrame(wx.Frame):
     def __init__(self):
-        from ._widget import ListCtrl, searchctrl
 
         super().__init__(parent=None, title="Kho thuốc")
-        self.searchctrl = searchctrl(self)
-        self.listctrl = ListCtrl(self)
+        self.searchctrl = wx.SearchCtrl(self)
+        self.searchctrl.SetHint("Tên thuốc hoặc thành phần thuốc")
+        self.listctrl = List(self)
         self.addbtn = wx.Button(self, label="Thêm mới")
         self.updbtn = wx.Button(self, label="Cập nhật")
         self.delbtn = wx.Button(self, label="Xoá")

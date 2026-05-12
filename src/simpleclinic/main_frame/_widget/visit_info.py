@@ -8,6 +8,7 @@ from lib.paths import WEIGHT_BM
 class Box(wx.Panel):
     def __init__(self, parent: wx.Window):
         super().__init__(parent)
+        self.SetOwnBackgroundColour(wx.Colour(*get_app().config["theme"]["visit_info"]))
         sz = wx.StaticBoxSizer(wx.VERTICAL, self, label="Thông tin lượt khám")
         box = sz.GetStaticBox()
         self.weight = NumCtrl(box, fractionWidth=1, min=0, limited=True)
@@ -68,7 +69,6 @@ class Box(wx.Panel):
             ]
         )
         self.SetSizerAndFit(sz)
-        self.SetOwnBackgroundColour(wx.Colour(230, 239, 254))
 
         self.Bind(wx.EVT_TEXT, self.on_price_changed, source=self.price)
 

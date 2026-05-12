@@ -1,6 +1,6 @@
 import wx
 from lib.wx_helper import get_app, row, column, EA
-from ._widget import patient_list, visit_list, patient_info, visit_info, visit_book
+from ._widget import patient_book, visit_list, patient_info, visit_info, order_info
 
 
 class MainFrame(wx.Frame):
@@ -9,14 +9,15 @@ class MainFrame(wx.Frame):
             parent=None, pos=wx.Point(0, 20), title="PHẦN MỀM PHÒNG KHÁM SIMPLE CLINIC"
         )
         self.SetFont(wx.Font(wx.FontInfo(get_app().config["theme"]["font_size"])))
+        self.SetBackgroundColour(wx.Colour(get_app().config["theme"]["main_frame"]))
         self.Maximize()
 
         self.patient_search = wx.SearchCtrl(self)
-        self.patient_list = patient_list.BookCtrl(self)
-        self.visit_list = visit_list.ListCtrl(self)
+        self.patient_list = patient_book.Book(self)
+        self.visit_list = visit_list.List(self)
         self.patient_info = patient_info.Box(self)
         self.visit_info = visit_info.Box(self)
-        self.visit_book = visit_book.BookCtrl(self)
+        self.visit_book = order_info.Book(self)
 
         left = column(
             (self.patient_search, 0, EA, 5),
@@ -24,8 +25,8 @@ class MainFrame(wx.Frame):
             (self.visit_list, 1, EA, 5),
         )
         right = column(
-            (self.patient_info, 1, EA, 5),
-            (self.visit_info, 1, EA, 5),
+            (self.patient_info, 0, EA, 5),
+            (self.visit_info, 0, EA, 5),
             (self.visit_book, 0, EA, 5),
         )
         self.SetSizerAndFit(

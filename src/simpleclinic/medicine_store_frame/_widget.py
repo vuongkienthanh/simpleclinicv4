@@ -1,14 +1,10 @@
 import wx
 import sqlite3
+from collections.abc import Mapping
+from typing import Any
 
 
-def searchctrl(parent: wx.Window) -> wx.SearchCtrl:
-    w = wx.SearchCtrl(parent)
-    w.SetHint("Tên thuốc hoặc thành phần thuốc")
-    return w
-
-
-class ListCtrl(wx.ListCtrl):
+class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("Mã", width=-1)
@@ -21,7 +17,7 @@ class ListCtrl(wx.ListCtrl):
         self.AppendColumn("Giá mua", width=-1)
         self.AppendColumn("Giá bán", width=-1)
 
-    def append(self, item: sqlite3.Row):
+    def append(self, item: sqlite3.Row | Mapping[str, Any]):
         self.Append(
             [
                 str(item["id"]),

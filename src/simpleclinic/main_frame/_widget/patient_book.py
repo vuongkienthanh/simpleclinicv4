@@ -1,6 +1,8 @@
 import wx
 import sqlite3
 from lib.db import DATE_FORMAT
+from collections.abc import Mapping
+from typing import Any
 
 
 class ListCtrl(wx.ListCtrl):
@@ -11,7 +13,7 @@ class ListCtrl(wx.ListCtrl):
         self.AppendColumn("Giới", width=-2)
         self.AppendColumn("Ngày sinh", width=-2)
 
-    def append(self, item: sqlite3.Row):
+    def append(self, item: sqlite3.Row | Mapping[str, Any]):
         self.Append(
             [
                 str(item["id"]),
@@ -22,7 +24,7 @@ class ListCtrl(wx.ListCtrl):
         )
 
 
-class BookCtrl(wx.Notebook):
+class Book(wx.Notebook):
     def __init__(self, parent: wx.Window):
         super().__init__(parent)
         self.queue = ListCtrl(self)

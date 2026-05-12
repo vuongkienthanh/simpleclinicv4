@@ -1,6 +1,6 @@
 import sqlite3
 import wx
-from ._widget import ListCtrl
+from ._widget import List
 from simpleclinic.service_dialog import AddDialog, UpdateDialog
 from lib.wx_helper import EA, row, column, get_app
 from lib.db import delete
@@ -12,7 +12,7 @@ class ServiceStoreFrame(wx.Frame):
 
         super().__init__(parent=None, title="Dịch vụ")
         self.searchctrl = wx.SearchCtrl(self)
-        self.listctrl = ListCtrl(self)
+        self.listctrl = List(self)
         self.addbtn = wx.Button(self, label="Thêm mới")
         self.updbtn = wx.Button(self, label="Cập nhật")
         self.delbtn = wx.Button(self, label="Xoá")

@@ -122,7 +122,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "wxpython", marker = "sys_platform == 'linux'", url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.5-cp314-cp314-linux_x86_64.whl" },
-    { name = "wxpython", marker = "sys_platform == 'windows'", specifier = ">=4.2.5" },
+    { name = "wxpython", marker = "sys_platform == 'win32'", specifier = ">=4.2.5" },
 ]
 
 [package.metadata.requires-dev]
@@ -133,9 +133,14 @@ name = "wxpython"
 version = "4.2.5"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "sys_platform == 'windows'",
+    "sys_platform != 'linux' and sys_platform != 'windows'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/43/81657a6b126ffc19163500a8184d683cec08eb4e1d06905cd0c371c702d0/wxpython-4.2.5.tar.gz", hash = "sha256:44e836d1bccd99c38790bb034b6ecf70d9060f6734320560f7c4b0d006144793", size = 58732217, upload-time = "2026-02-08T20:40:42.086Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/a7/261bf54686192ebefc42b494da97ba3312bd01c1d37a964f0cb83f271cf0/wxpython-4.2.5-cp314-cp314-win32.whl", hash = "sha256:230ecb4de65a8d2f8bc30bccd4d64366ac3a7cf53759b77920de927d156ad9c5", size = 14859697, upload-time = "2026-02-08T20:40:33.108Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/9a/73f12041178db3728a809ce37c2b64409291cb45567b2918df478f0ceb20/wxpython-4.2.5-cp314-cp314-win_amd64.whl", hash = "sha256:eb1c228f0c20ed93f2799ebd81780abc7fd65cfa8f6b65e989b68c0c18c52707", size = 16947346, upload-time = "2026-02-08T20:40:35.583Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/49/3a39f5fe78a7194c848919c4b681f432fe937006e2e5182a17dd519f8c91/wxpython-4.2.5-cp314-cp314-win_arm64.whl", hash = "sha256:d4439bf4b18ac720afbcf51c37d7822ba62ab6999501e96cce1dfc2f55a19344", size = 15809574, upload-time = "2026-02-08T20:40:38.859Z" },
+]
 
 [[package]]
 name = "wxpython"

@@ -7,7 +7,7 @@ authors = [{ name = "vuongkienthanh", email = "thanhstardust@outlook.com" }]
 urls = { repository = "https://github.com/vuongkienthanh/SimpleClinic" }
 requires-python = ">=3.14"
 dependencies = [
-    "wxpython>=4.2.5 ; sys_platform == 'windows'",
+    "wxpython>=4.2.5 ; sys_platform == 'win32'",
     "wxpython @ https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.5-cp314-cp314-linux_x86_64.whl ; sys_platform == 'linux'",
 ]
 

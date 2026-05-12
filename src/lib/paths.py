@@ -19,6 +19,7 @@ MINUS_BM = BITMAPS / "minus.png"
 WEIGHT_BM = BITMAPS / "weight.png"
 REFRESH_BM = BITMAPS / "refresh.png"
 MEDICINE_BM = BITMAPS / "medicine.png"
+SERVICE_BM = BITMAPS / "service.png"
 
 #######
 SCHEMA_SQL = ASSETS / "schema.sql"
