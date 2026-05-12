@@ -1,0 +1,98 @@
+import wx
+from wx.lib.intctrl import IntCtrl
+from lib.wx_helper import EA, row, column
+from lib.models import MedicineStore
+
+
+class Dialog(wx.Dialog):
+    def __init__(
+        self,
+        parent: wx.Window,
+        title: str,
+        id: int | None = None,
+        name="",
+        element="",
+        quantity="",
+        route="",
+        usage_unit="",
+        selling_unit="",
+        cost_price="",
+        selling_price="",
+    ):
+        super().__init__(
+            parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        )
+        self.name = wx.TextCtrl(
+            self,
+            name="Tên thuốc",
+        )
+        self.element = wx.TextCtrl(self, name="Thành phần", size=wx.Size(300, -1))
+        self.quantity = IntCtrl(self, name="Số lượng", min=0, limited=True)
+        self.route = wx.TextCtrl(self, name="Đường dùng")
+        self.usage_unit = wx.TextCtrl(self, name="Đơn vị dùng")
+        self.selling_unit = wx.TextCtrl(self, name="Đơn vị bán")
+        self.cost_price = IntCtrl(self, name="Giá mua", min=0, limited=True)
+        self.selling_price = IntCtrl(self, name="Giá bán", min=0, limited=True)
+        self.okbtn = wx.Button(self, label="Ok")
+        self.cancelbtn = wx.Button(self, label="Cancel")
+
+        def widget(w: wx.TextCtrl):
+            left = wx.ALIGN_CENTER_VERTICAL | wx.ALL
+            right = wx.EXPAND | wx.ALL
+            return (wx.StaticText(self, label=w.Name), 0, left, 3), (w, 1, right, 3)
+
+        info_sizer = wx.FlexGridSizer(11, 2, 3, 3)
+        info_sizer.AddGrowableCol(1, 3)
+        info_sizer.AddMany(
+            [
+                *widget(self.name),
+                *widget(self.element),
+                *widget(self.quantity),
+                *widget(self.route),
+                *widget(self.usage_unit),
+                *widget(self.selling_unit),
+                *widget(self.cost_price),
+                *widget(self.selling_price),
+            ]
+        )
+        btn_sizer = row(
+            (0, 0, 1),
+            (self.okbtn, 0, wx.ALL, 5),
+            (self.cancelbtn, 0, wx.ALL, 5),
+        )
+
+        self.SetSizerAndFit(
+            column(
+                (info_sizer, 1, EA, 5),
+                (btn_sizer, 0, EA, 5),
+            )
+        )
+
+        self.id = id
+        self.name.ChangeValue(name)
+        self.element.ChangeValue(element)
+        self.quantity.ChangeValue(quantity)
+        self.route.ChangeValue(route)
+        self.usage_unit.ChangeValue(usage_unit)
+        self.selling_unit.ChangeValue(selling_unit)
+        self.cost_price.ChangeValue(cost_price)
+        self.selling_price.ChangeValue(selling_price)
+
+        self.okbtn.Bind(wx.EVT_BUTTON, self.on_ok)
+        self.cancelbtn.Bind(wx.EVT_BUTTON, self.on_cancel)
+
+    def on_ok(self, _): ...
+    def on_cancel(self, _):
+        self.Close()
+
+    def get_item(self):
+        return MedicineStore(
+            name=self.name.Value.strip(),
+            element=self.element.Value.strip(),
+            quantity=int(self.quantity.Value),
+            route=self.route.Value.strip(),
+            usage_unit=self.usage_unit.Value.strip(),
+            selling_unit=self.selling_unit.Value.strip(),
+            cost_price=int(self.cost_price.Value),
+            selling_price=int(self.selling_price.Value),
+        )
