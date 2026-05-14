@@ -11,14 +11,14 @@ from lib.wx_helper import (
 import sqlite3
 from collections.abc import Mapping
 from typing import Any
+from .comboctrl import Picker
 
 
 class Panel(wx.Panel):
     def __init__(self, parent: wx.Window):
         super().__init__(parent)
         self.SetBackgroundColour(wx.Colour(*get_app().config["theme"]["order_info"]))
-        self.search = wx.SearchCtrl(self)
-        self.search.SetHint("Enter để search")
+        self.search = Picker(self)
         self.quantity = IntCtrl(self, min=0, limited=True)
         self.price = NumCtrl(self, style=wx.TE_READONLY)
         self.price.SetGroupDigits(True)

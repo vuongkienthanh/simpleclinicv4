@@ -1,6 +1,6 @@
 import wx
 from typing import override
-from lib.wx_helper import get_app
+from lib.wx_helper import get_app, get_main_frame
 
 
 class Popup(wx.ComboPopup):
@@ -40,7 +40,7 @@ class Popup(wx.ComboPopup):
 
     @override
     def GetAdjustedSize(self, minWidth, prefHeight, maxHeight):
-        return wx.ComboPopup.GetAdjustedSize(self, 800, 200, 400)
+        return wx.ComboPopup.GetAdjustedSize(self, 600, 200, 400)
 
     @override
     def OnPopup(self):
@@ -78,7 +78,7 @@ class Popup(wx.ComboPopup):
     def select_drug(self):
         cc = self.ComboCtrl
         i = self.curitem
-        get_app().medicine_id = int(self.lc.GetItemText(i, 0))
+        get_main_frame().medicine_id = int(self.lc.GetItemText(i, 0))
         cc.Value = self.lc.GetItemText(i, 1)
         self.Dismiss()
         cc.Navigate()

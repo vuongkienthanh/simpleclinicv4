@@ -35,13 +35,6 @@ class Visit(BASEMODEL):
 
 @final
 @dataclass(slots=True, frozen=True)
-class SeenToday(BASEMODEL):
-    __tablename__ = "seentoday"
-    visit_id: int
-
-
-@final
-@dataclass(slots=True, frozen=True)
 class MedicineStore(BASEMODEL):
     __tablename__ = "medicine_store"
     name: str

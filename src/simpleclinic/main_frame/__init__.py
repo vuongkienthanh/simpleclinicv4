@@ -35,3 +35,9 @@ class MainFrame(wx.Frame):
                 (right, 3, EA, 5),
             )
         )
+
+        # DATA
+        self.patient_id : int |None= None
+        self.visit_id : int |None= None
+        self.medicine_id: int | None = None
+        self.service_id: int | None = None

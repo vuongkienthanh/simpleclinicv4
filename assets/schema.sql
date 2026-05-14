@@ -28,15 +28,6 @@ CREATE TABLE IF NOT EXISTS visits (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS seentoday (
-    id INTEGER PRIMARY KEY,
-    visit_id INTEGER,
-    misc TEXT,
-    FOREIGN KEY (visit_id) REFERENCES visits (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS medicine_store (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL CHECK (name <> ''),
@@ -90,8 +81,7 @@ CREATE TABLE IF NOT EXISTS services (
 );
 
 CREATE INDEX IF NOT EXISTS patient_name ON patients (name);
--- CREATE INDEX IF NOT EXISTS medicine_name ON medicine_store (name);
--- CREATE INDEX IF NOT EXISTS medicine_element ON medicine_store (element);
--- CREATE INDEX IF NOT EXISTS service_name ON service_store (name);
+
+CREATE VIEW IF NOT EXISTS seentoday
 
 INSERT OR IGNORE INTO singleton (id, last_open_date) VALUES ( 1, DATE('now', 'localtime'));

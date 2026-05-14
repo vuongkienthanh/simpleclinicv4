@@ -16,7 +16,7 @@ from lib.wx_helper import (
 import sqlite3
 from collections.abc import Mapping
 from typing import Any
-from .order_medicine_comboctrl import Picker
+from .comboctrl import Picker
 
 
 class Panel(wx.Panel):

@@ -48,18 +48,6 @@ class App(wx.App):
         self.service_store: list[sqlite3.Row]
         self.fetch_stable_data()
 
-        # id
-        self.patient_id: int | None = None
-        self.visit_id: int | None = None
-        self.medicine_id: int | None = None
-        self.service_id: int | None = None
-
-        # is_changed
-        self.is_patient_info_changed = False
-        self.is_visit_info_changed = False
-        self.is_medicine_info_changed = False
-        self.is_service_info_changed = False
-
     @override
     def __del__(self):
         with open(CLOSE_APP_SQL, "r") as f:
@@ -85,16 +73,6 @@ class App(wx.App):
 
     def refresh(self):
         self.fetch_stable_data()
-
-        self.patient_id = None
-        self.visit_id = None
-        self.medicine_id = None
-        self.service_id = None
-
-        self.is_patient_info_changed = False
-        self.is_visit_info_changed = False
-        self.is_medicine_info_changed = False
-        self.is_service_info_changed = False
         # get_main_frame().refresh()
 
 
