@@ -16,14 +16,14 @@ from lib.wx_helper import (
 import sqlite3
 from collections.abc import Mapping
 from typing import Any
+from .order_medicine_comboctrl import Picker
 
 
 class Panel(wx.Panel):
     def __init__(self, parent: wx.Window):
         super().__init__(parent)
         self.SetBackgroundColour(wx.Colour(*get_app().config["theme"]["order_info"]))
-        self.search = wx.SearchCtrl(self)
-        self.search.SetHint("Enter để search")
+        self.search = Picker(self)
         self.times = IntCtrl(self, min=0, limited=True)
         self.dose = DoseCtrl(self)
         self.usage_unit = wx.StaticText(self, label="{đơn vị}")
@@ -32,7 +32,6 @@ class Panel(wx.Panel):
         self.usage_note = wx.TextCtrl(self)
         self.price = NumCtrl(self, style=wx.TE_READONLY)
         self.price.SetParameters(groupDigits=True, groupChar=".", decimalChar=",")
-        self.price.SetValue(265000)
         self.list = List(self)
         self.addbtn = wx.BitmapButton(
             self, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))

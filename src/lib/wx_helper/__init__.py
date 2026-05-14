@@ -9,6 +9,10 @@ def get_app() -> simpleclinic.App:
     return cast(simpleclinic.App, wx.App.Get())
 
 
+def get_main_frame() -> simpleclinic.MainFrame:
+    return cast(simpleclinic.MainFrame, wx.App.GetMainTopWindow())
+
+
 def column(*children) -> wx.BoxSizer:
     sizer = wx.BoxSizer(wx.VERTICAL)
     sizer.AddMany([child for child in children])

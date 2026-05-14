@@ -22,8 +22,6 @@ class Box(wx.Panel):
         self.newbtn = wx.Button(box, label="BN Mới")
         self.oldbtn = wx.Button(box, label="Cập nhật")
         self.cancelbtn = wx.Button(box, label="Cancel")
-        self.oldbtn.Disable()
-        self.cancelbtn.Hide()
 
         def static(label: str, w=-1):
             return (

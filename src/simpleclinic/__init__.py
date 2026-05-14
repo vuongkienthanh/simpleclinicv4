@@ -2,12 +2,13 @@ import sqlite3
 import tomllib
 import wx
 from lib.paths import DB_PATH, CFG_PATH, PYPROJECT, START_APP_SQL, CLOSE_APP_SQL
+from lib.wx_helper import get_main_frame
 from lib.config import get_config
 from lib.db import connect
 import sys
 import os
 from typing import override
-from .main_frame import MainFrame
+from .main_frame import MainFrame as MainFrame
 
 
 def platform_settings():
@@ -38,22 +39,26 @@ class App(wx.App):
         with open(START_APP_SQL, "r") as f:
             self.conn.executescript(f.read())
 
+        main_frame = MainFrame()
+        main_frame.Show()
+        self.SetTopWindow(main_frame)
+
         # DATA
         self.medicine_store: list[sqlite3.Row]
         self.service_store: list[sqlite3.Row]
         self.fetch_stable_data()
 
+        # id
+        self.patient_id: int | None = None
+        self.visit_id: int | None = None
+        self.medicine_id: int | None = None
+        self.service_id: int | None = None
+
         # is_changed
-
-        main = MainFrame()
-        main.Show()
-        self.SetTopWindow(main)
-
-        # from simpleclinic.patient_dialog import AddDialog
-        #
-        # main = AddDialog(None)
-        # main.Show()
-        # self.SetTopWindow(main)
+        self.is_patient_info_changed = False
+        self.is_visit_info_changed = False
+        self.is_medicine_info_changed = False
+        self.is_service_info_changed = False
 
     @override
     def __del__(self):
@@ -81,6 +86,17 @@ class App(wx.App):
     def refresh(self):
         self.fetch_stable_data()
 
+        self.patient_id = None
+        self.visit_id = None
+        self.medicine_id = None
+        self.service_id = None
+
+        self.is_patient_info_changed = False
+        self.is_visit_info_changed = False
+        self.is_medicine_info_changed = False
+        self.is_service_info_changed = False
+        # get_main_frame().refresh()
+
 
 def main():
     print("Checking health:... ", end="")
@@ -90,6 +106,3 @@ def main():
 
     platform_settings()
     App().MainLoop()
-
-if __name__=='__main__':
-    main()
