@@ -24,10 +24,10 @@ class Panel(wx.Panel):
         self.price.SetGroupDigits(True)
         self.price.SetParameters(groupDigits=True, groupChar=".", decimalChar=",")
         self.list = List(self)
-        self.addbtn = wx.BitmapButton(
+        self.add_btn = wx.BitmapButton(
             self, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
         )
-        self.delbtn = wx.BitmapButton(
+        self.del_btn = wx.BitmapButton(
             self, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
         )
 
@@ -46,8 +46,8 @@ class Panel(wx.Panel):
             (self.quantity, 0, EA, 2),
             static("Đơn giá: "),
             (self.price, 0, EA, 2),
-            (self.addbtn, 0, EA, 2),
-            (self.delbtn, 0, EA, 2),
+            (self.add_btn, 0, EA, 2),
+            (self.del_btn, 0, EA, 2),
         )
         self.SetSizerAndFit(column((row1, 0, EA, 5), (self.list, 1, EA, 5)))
 

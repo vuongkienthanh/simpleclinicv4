@@ -32,11 +32,12 @@ class Panel(wx.Panel):
         self.usage_note = wx.TextCtrl(self)
         self.price = NumCtrl(self, style=wx.TE_READONLY)
         self.price.SetParameters(groupDigits=True, groupChar=".", decimalChar=",")
+        self.price.Disable()
         self.list = List(self)
-        self.addbtn = wx.BitmapButton(
+        self.add_btn = wx.BitmapButton(
             self, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
         )
-        self.delbtn = wx.BitmapButton(
+        self.del_btn = wx.BitmapButton(
             self, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
         )
 
@@ -59,8 +60,8 @@ class Panel(wx.Panel):
             static("Tổng: "),
             (self.quantity, 0, EA, 2),
             (self.selling_unit, 0, wx.ALIGN_CENTER_VERTICAL, 2),
-            (self.addbtn, 0, EA, 2),
-            (self.delbtn, 0, EA, 2),
+            (self.add_btn, 0, EA, 2),
+            (self.del_btn, 0, EA, 2),
         )
         row2 = row(
             static("Cách sử dụng:", 120),

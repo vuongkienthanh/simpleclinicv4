@@ -1,5 +1,6 @@
+import sqlite3
 import wx
-from lib.wx_helper import EA, row, get_app
+from lib.wx_helper import EA, get_main_frame, row, get_app
 from wx.lib.intctrl import IntCtrl
 from wx.lib.masked.numctrl import NumCtrl
 from lib.paths import WEIGHT_BM
@@ -70,7 +71,28 @@ class Box(wx.Panel):
         )
         self.SetSizerAndFit(sz)
 
-        self.Bind(wx.EVT_TEXT, self.on_price_changed, source=self.price)
+        self.get_weight.Bind(wx.EVT_BUTTON, self.on_get_weight)
+        self.price.Bind(wx.EVT_TEXT, self.on_price_changed)
+
+    def on_get_weight(self, _):
+        id = get_main_frame().patient_id
+        if id is not None:
+            try:
+                last_weight = (
+                    get_app()
+                    .conn.execute(
+                        """
+                    SELECT weight FROM visits WHERE patient_id = ?
+                    ORDER BY exam_datetime DESC
+                    LIMIT 1
+                        """,
+                        (id,),
+                    )
+                    .fetchone()
+                )
+                self.weight.SetValue(last_weight / 10)
+            except sqlite3.Error as error:
+                wx.MessageBox("Lỗi", str(error))
 
     def on_price_changed(self, e):
         self.price_txt.SetLabel(f"{int(e.String):,}")

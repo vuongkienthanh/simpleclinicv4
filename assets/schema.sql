@@ -1,8 +1,3 @@
-CREATE TABLE IF NOT EXISTS singleton (
-    id INTEGER PRIMARY KEY,
-    last_open_date INTEGER
-);
-
 CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL CHECK (name <> ''),
@@ -83,5 +78,13 @@ CREATE TABLE IF NOT EXISTS services (
 CREATE INDEX IF NOT EXISTS patient_name ON patients (name);
 
 CREATE VIEW IF NOT EXISTS seentoday
+(id, name, gedner, birthdate) AS
+SELECT (p.id, p.name, p.gender, p.birthdate)
+FROM patients AS p JOIN visits as v
+WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime) == DATE('now', 'localtime'));
 
-INSERT OR IGNORE INTO singleton (id, last_open_date) VALUES ( 1, DATE('now', 'localtime'));
+CREATE VIEW IF NOT EXISTS follow_up
+(id, name, gedner, birthdate) AS
+SELECT (p.id, p.name, p.gender, p.birthdate)
+FROM patients AS p JOIN visits as v
+WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime, "+" || v.days || " days") == DATE('now', 'localtime'));

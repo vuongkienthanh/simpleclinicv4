@@ -33,8 +33,8 @@ class Dialog(wx.Dialog):
         self.selling_unit = wx.TextCtrl(self, name="Đơn vị bán")
         self.cost_price = IntCtrl(self, name="Giá mua", min=0, limited=True)
         self.selling_price = IntCtrl(self, name="Giá bán", min=0, limited=True)
-        self.okbtn = wx.Button(self, label="Ok")
-        self.cancelbtn = wx.Button(self, label="Cancel")
+        self.ok_btn = wx.Button(self, label="Ok")
+        self.cancel_btn = wx.Button(self, label="Cancel")
 
         def widget(w: wx.TextCtrl):
             left = wx.ALIGN_CENTER_VERTICAL | wx.ALL
@@ -57,8 +57,8 @@ class Dialog(wx.Dialog):
         )
         btn_sizer = row(
             (0, 0, 1),
-            (self.okbtn, 0, wx.ALL, 5),
-            (self.cancelbtn, 0, wx.ALL, 5),
+            (self.ok_btn, 0, wx.ALL, 5),
+            (self.cancel_btn, 0, wx.ALL, 5),
         )
 
         self.SetSizerAndFit(
@@ -78,8 +78,8 @@ class Dialog(wx.Dialog):
         self.cost_price.ChangeValue(cost_price)
         self.selling_price.ChangeValue(selling_price)
 
-        self.okbtn.Bind(wx.EVT_BUTTON, self.on_ok)
-        self.cancelbtn.Bind(wx.EVT_BUTTON, self.on_cancel)
+        self.ok_btn.Bind(wx.EVT_BUTTON, self.on_ok)
+        self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel)
 
     def on_ok(self, _): ...
     def on_cancel(self, _):

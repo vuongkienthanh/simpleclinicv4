@@ -31,8 +31,8 @@ class Dialog(wx.Dialog):
         self.past_history = wx.TextCtrl(
             self, style=wx.TE_MULTILINE, name="Bệnh nền, dị ứng"
         )
-        self.okbtn = wx.Button(self, label="OK")
-        self.cancelbtn = wx.Button(self, label="Cancel")
+        self.ok_btn = wx.Button(self, label="OK")
+        self.cancel_btn = wx.Button(self, label="Cancel")
 
         self.id = id
         self.name.ChangeValue(name)
@@ -60,8 +60,8 @@ class Dialog(wx.Dialog):
         )
         btn_sizer = row(
             (0, 0, 1),
-            (self.okbtn, 0, wx.RIGHT, 5),
-            (self.cancelbtn, 0, wx.RIGHT, 5),
+            (self.ok_btn, 0, wx.RIGHT, 5),
+            (self.cancel_btn, 0, wx.RIGHT, 5),
         )
 
         self.SetSizerAndFit(
@@ -69,8 +69,8 @@ class Dialog(wx.Dialog):
         )
 
         self.Bind(wx.adv.EVT_CALENDAR_SEL_CHANGED, self.on_birthdate)
-        self.Bind(wx.EVT_BUTTON, self.on_ok, source=self.okbtn)
-        self.Bind(wx.EVT_BUTTON, self.on_cancel, source=self.cancelbtn)
+        self.Bind(wx.EVT_BUTTON, self.on_ok, source=self.ok_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_cancel, source=self.cancel_btn)
 
     def on_birthdate(self, e: wx.adv.CalendarEvent):
         date = e.GetDate()

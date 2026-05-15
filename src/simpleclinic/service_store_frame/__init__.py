@@ -13,9 +13,9 @@ class ServiceStoreFrame(wx.Frame):
         super().__init__(parent=None, title="Dịch vụ")
         self.searchctrl = wx.SearchCtrl(self)
         self.listctrl = List(self)
-        self.addbtn = wx.Button(self, label="Thêm mới")
-        self.updbtn = wx.Button(self, label="Cập nhật")
-        self.delbtn = wx.Button(self, label="Xoá")
+        self.add_btn = wx.Button(self, label="Thêm mới")
+        self.upd_btn = wx.Button(self, label="Cập nhật")
+        self.del_btn = wx.Button(self, label="Xoá")
 
         search_sizer = row(
             (wx.StaticText(self, label="Tìm kiếm"), 0, EA | wx.ALIGN_CENTER, 5),
@@ -23,9 +23,9 @@ class ServiceStoreFrame(wx.Frame):
         )
         btn_sizer = row(
             (0, 0, 1),
-            (self.addbtn, 0, wx.RIGHT, 5),
-            (self.updbtn, 0, wx.RIGHT, 5),
-            (self.delbtn, 0, wx.RIGHT, 5),
+            (self.add_btn, 0, wx.RIGHT, 5),
+            (self.upd_btn, 0, wx.RIGHT, 5),
+            (self.del_btn, 0, wx.RIGHT, 5),
         )
         self.SetSizerAndFit(
             column(
@@ -42,17 +42,17 @@ class ServiceStoreFrame(wx.Frame):
         self.Bind(wx.EVT_TEXT, self.on_text, source=self.searchctrl)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select, source=self.listctrl)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect, source=self.listctrl)
-        self.Bind(wx.EVT_BUTTON, self.on_add, source=self.addbtn)
-        self.Bind(wx.EVT_BUTTON, self.on_upd, source=self.updbtn)
-        self.Bind(wx.EVT_BUTTON, self.on_del, source=self.delbtn)
+        self.Bind(wx.EVT_BUTTON, self.on_add, source=self.add_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_upd, source=self.upd_btn)
+        self.Bind(wx.EVT_BUTTON, self.on_del, source=self.del_btn)
 
     def refresh(self):
         self.searchctrl.ChangeValue("")
         self.listctrl.DeleteAllItems()
         for item in get_app().service_store:
             self.listctrl.append(item)
-        self.updbtn.Disable()
-        self.delbtn.Disable()
+        self.upd_btn.Disable()
+        self.del_btn.Disable()
 
     def on_close(self, e: wx.Event):
         get_app().refresh()
@@ -74,16 +74,16 @@ class ServiceStoreFrame(wx.Frame):
         if e.GetString() == "":
             self.refresh()
         else:
-            self.updbtn.Disable()
-            self.delbtn.Disable()
+            self.upd_btn.Disable()
+            self.del_btn.Disable()
 
     def on_select(self, _):
-        self.updbtn.Enable()
-        self.delbtn.Enable()
+        self.upd_btn.Enable()
+        self.del_btn.Enable()
 
     def on_deselect(self, _):
-        self.updbtn.Disable()
-        self.delbtn.Disable()
+        self.upd_btn.Disable()
+        self.del_btn.Disable()
 
     def on_add(self, _):
         AddDialog(self).ShowModal()
