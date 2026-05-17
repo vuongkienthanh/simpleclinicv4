@@ -14,6 +14,10 @@ PYPROJECT = SRC.parent / "pyproject.toml"
 #######
 BITMAPS = ASSETS / "bitmaps"
 
+UPDATE_BM = BITMAPS / "update.png"
+REMOVE_BM = BITMAPS / "remove.png"
+OK_BM = BITMAPS / "ok.png"
+CANCEL_BM = BITMAPS / "cancel.png"
 PLUS_BM = BITMAPS / "plus.png"
 MINUS_BM = BITMAPS / "minus.png"
 WEIGHT_BM = BITMAPS / "weight.png"

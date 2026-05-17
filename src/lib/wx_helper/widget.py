@@ -1,5 +1,12 @@
 import wx
 from lib.enums import Gender
+from lib.wx_helper import (
+    NUMBERS,
+    NUMPADS,
+    SPECIALS,
+    SLASH,
+    DECIMAL,
+)
 
 
 class GenderChoiceCtrl(wx.Choice):
@@ -14,3 +21,18 @@ class GenderChoiceCtrl(wx.Choice):
 
     def SetGender(self, gender: Gender):
         self.SetSelection(gender.value)
+
+
+class DoseCtrl(wx.TextCtrl):
+    def __init__(self, parent: wx.Window):
+        super().__init__(parent)
+        self.Bind(wx.EVT_CHAR, self.on_char)
+
+    def on_char(self, e: wx.KeyEvent):
+        keys = NUMBERS + NUMPADS + SPECIALS
+        s = self.Value
+        if "/" not in s and "." not in s:
+            keys += SLASH + DECIMAL
+
+        if e.KeyCode in keys:
+            e.Skip()

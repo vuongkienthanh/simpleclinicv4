@@ -1,7 +1,5 @@
-from typing import Any
 import wx
 import sqlite3
-from collections.abc import Mapping
 
 
 class List(wx.ListCtrl):
@@ -11,7 +9,7 @@ class List(wx.ListCtrl):
         self.AppendColumn("Tên", width=-1)
         self.AppendColumn("Giá", width=-1)
 
-    def append(self, item: sqlite3.Row | Mapping[str, Any]):
+    def append(self, item: sqlite3.Row):
         self.Append(
             [
                 str(item["id"]),

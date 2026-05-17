@@ -1,6 +1,28 @@
 import wx
+import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
+
+
+class List(wx.ListCtrl):
+    def __init__(self, parent: wx.Window):
+        super().__init__(parent, style=wx.LC_REPORT)
+        self.AppendColumn("STT", width=-1)
+        self.AppendColumn("Mã", width=-1)
+        self.AppendColumn("Dịch vụ", width=-1)
+        self.AppendColumn("Số lượng", width=-1)
+        self.AppendColumn("Giá", width=-1)
+
+    def append(self, item: sqlite3.Row):
+        self.Append(
+            [
+                str(self.GetItemCount() + 1),
+                str(item["id"]),
+                item["name"],
+                str(item["quantity"]),
+                str(item["price"] * item["quantity"]),
+            ]
+        )
 
 
 class Popup(wx.ComboPopup):

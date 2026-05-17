@@ -2,9 +2,9 @@ import sqlite3
 import tomllib
 import wx
 from lib.paths import DB_PATH, CFG_PATH, PYPROJECT, START_APP_SQL, CLOSE_APP_SQL
-from lib.wx_helper import get_main_frame
 from lib.config import get_config
 from lib.db import connect
+from lib.wx_helper import get_main_frame
 import sys
 import os
 from typing import override
@@ -48,6 +48,11 @@ class App(wx.App):
         self.service_store: list[sqlite3.Row]
         self.fetch_stable_data()
 
+        main_frame.patient_id = None
+        main_frame.visit_id = None
+        main_frame.medicine_id = None
+        main_frame.service_id = None
+
     @override
     def __del__(self):
         with open(CLOSE_APP_SQL, "r") as f:
@@ -73,7 +78,7 @@ class App(wx.App):
 
     def refresh(self):
         self.fetch_stable_data()
-        # get_main_frame().refresh()
+        get_main_frame().refresh()
 
 
 def main():
