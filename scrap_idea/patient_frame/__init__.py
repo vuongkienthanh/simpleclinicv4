@@ -117,8 +117,8 @@ class PatientFrame(wx.Frame):
         app = get_app()
         if (
             wx.MessageBox(
-                "Xoá bệnh nhân",
                 f"{self.listctrl.GetItemText(item, 1)}",
+                "Xoá bệnh nhân",
                 style=wx.YES_NO | wx.NO_DEFAULT,
             )
             == wx.YES
@@ -126,5 +126,5 @@ class PatientFrame(wx.Frame):
             try:
                 delete(app.conn, Patient, id)
             except sqlite3.Error as error:
-                wx.MessageBox("Không xoá được", f"{error}")
+                wx.MessageBox(str(error), "Không xoá được")
         self.refresh()

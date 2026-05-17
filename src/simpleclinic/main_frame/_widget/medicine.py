@@ -2,15 +2,14 @@ import wx
 import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
+from lib.models import MedicineStore
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã", width=-1)
         self.AppendColumn("Thuốc", width=-1)
-        self.AppendColumn("Thành phần", width=-1)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
         self.AppendColumn("Số lượng", width=-1)
@@ -21,14 +20,12 @@ class List(wx.ListCtrl):
         self.Append(
             [
                 str(self.GetItemCount() + 1),
-                str(item["id"]),
                 item["name"],
-                item["element"],
                 str(item["times"]),
                 f"{item['dose']} {item['usage_unit']}",
                 f"{item['quantity']} {item['selling_unit']}",
                 item["usage_note"],
-                str(item["price"] * item["quantity"]),
+                str(item["selling_price"] * item["quantity"]),
             ]
         )
 
@@ -37,6 +34,8 @@ class Popup(wx.ComboPopup):
     def __init__(self):
         super().__init__()
         self.lc: wx.ListCtrl
+        # so many columns so i have to store temp list to retrieve item later
+        self._list = []
         self.curitem: int
 
     @override
@@ -75,7 +74,9 @@ class Popup(wx.ComboPopup):
     @override
     def OnPopup(self):
         s: str = self.ComboCtrl.Value
+        self.curitem = -1
         self.lc.DeleteAllItems()
+        self._list.clear()
         s = s.strip().casefold()
         for item in filter(
             lambda item: (
@@ -94,6 +95,7 @@ class Popup(wx.ComboPopup):
                     item["route"],
                 ]
             )
+            self._list.append(item)
 
     def on_motion(self, e):
         index, _ = self.lc.HitTest(e.GetPosition())
@@ -108,9 +110,18 @@ class Popup(wx.ComboPopup):
     def select_drug(self):
         cc = self.ComboCtrl
         i = self.curitem
-        get_main_frame().medicine_id = int(self.lc.GetItemText(i, 0))
-        cc.Value = self.lc.GetItemText(i, 1)
+        get_main_frame().medicine = MedicineStore(
+            name=self._list[i]["name"],
+            element=self._list[i]["element"],
+            route=self._list[i]["route"],
+            usage_unit=self._list[i]["usage_unit"],
+            quantity=self._list[i]["quantity"],
+            selling_unit=self._list[i]["selling_unit"],
+            cost_price=self._list[i]["cost_price"],
+            selling_price=self._list[i]["selling_price"],
+        )
         self.Dismiss()
+        cc.Value = self.lc.GetItemText(i, 1)
         cc.Navigate()
 
     def on_char(self, e: wx.KeyEvent):

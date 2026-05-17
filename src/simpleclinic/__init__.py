@@ -50,8 +50,8 @@ class App(wx.App):
 
         main_frame.patient_id = None
         main_frame.visit_id = None
-        main_frame.medicine_id = None
-        main_frame.service_id = None
+        main_frame.medicine = None
+        main_frame.service = None
 
     @override
     def __del__(self):

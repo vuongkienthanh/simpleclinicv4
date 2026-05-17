@@ -1,5 +1,5 @@
 [process]
-checkup_price = 50000
+price = 50000
 single_sale_units = ["chai", "lọ", "týp", "tube", "tuýp"]
 
 default_visit_note = "Khám lại khi trẻ có những dấu hiệu sau: co giật, ngủ li bì hay vật vã, bứt rứt, thở mệt, nôn ói nhiều, sốt cao liên tục, tiêu máu"

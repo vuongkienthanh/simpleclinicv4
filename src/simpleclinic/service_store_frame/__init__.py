@@ -107,8 +107,8 @@ class ServiceStoreFrame(wx.Frame):
         app = get_app()
         if (
             wx.MessageBox(
-                "Xoá dịch vụ",
                 f"{self.listctrl.GetItemText(item, 1)}",
+                "Xoá dịch vụ",
                 style=wx.YES_NO | wx.NO_DEFAULT,
             )
             == wx.YES
@@ -117,5 +117,5 @@ class ServiceStoreFrame(wx.Frame):
                 delete(app.conn, ServiceStore, id)
                 app.fetch_service_store()
             except sqlite3.Error as error:
-                wx.MessageBox("Không xoá được", f"{error}")
+                wx.MessageBox(str(error), "Không xoá được")
         self.refresh()

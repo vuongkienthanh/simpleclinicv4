@@ -1,6 +1,7 @@
 import wx
 import sqlite3
 from typing import override
+from lib.models import ServiceStore
 from lib.wx_helper import get_app, get_main_frame
 
 
@@ -8,7 +9,6 @@ class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã", width=-1)
         self.AppendColumn("Dịch vụ", width=-1)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Giá", width=-1)
@@ -17,7 +17,6 @@ class List(wx.ListCtrl):
         self.Append(
             [
                 str(self.GetItemCount() + 1),
-                str(item["id"]),
                 item["name"],
                 str(item["quantity"]),
                 str(item["price"] * item["quantity"]),
@@ -90,9 +89,11 @@ class Popup(wx.ComboPopup):
     def select_drug(self):
         cc = self.ComboCtrl
         i = self.curitem
-        get_main_frame().service_id = int(self.lc.GetItemText(i, 0))
-        cc.Value = self.lc.GetItemText(i, 1)
+        get_main_frame().service = ServiceStore(
+            name=self.lc.GetItemText(i, 1), price=int(self.lc.GetItemText(i, 2))
+        )
         self.Dismiss()
+        cc.Value = self.lc.GetItemText(i, 1)
         cc.Navigate()
 
     def on_char(self, e: wx.KeyEvent):

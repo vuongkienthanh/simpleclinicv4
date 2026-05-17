@@ -6,18 +6,14 @@ from wx.lib.intctrl import IntCtrl
 from wx.lib.masked.numctrl import NumCtrl
 
 from lib.paths import (
-    WEIGHT_BM,
     MEDICINE_BM,
     SERVICE_BM,
     PLUS_BM,
     MINUS_BM,
-    UPDATE_BM,
-    OK_BM,
-    CANCEL_BM,
 )
 from lib.wx_helper import get_app, row, column, EA
 from lib.wx_helper.widget import GenderChoiceCtrl, DoseCtrl
-from lib.models import Patient
+from lib.models import Patient, MedicineStore, ServiceStore
 from lib.enums import Gender
 from lib.db import insert, update
 from lib.vn import bd_to_vn_age
@@ -40,13 +36,13 @@ class MainFrame(wx.Frame):
 
         patient_search = wx.SearchCtrl(self)
         patient_book = wx.Notebook(self)
-        queue = patient.List(patient_book)
-        seentoday = patient.List(patient_book)
-        follow_up = patient.List(patient_book)
-        patient_book.AddPage(page=queue, text="Danh sách BN", select=True)
-        patient_book.AddPage(page=seentoday, text="Đã khám hôm nay")
-        patient_book.AddPage(page=follow_up, text="Tái khám")
-        visit_list = visit.List(self)
+        self.queue = patient.List(patient_book)
+        self.seentoday = patient.List(patient_book)
+        self.follow_up = patient.List(patient_book)
+        patient_book.AddPage(page=self.queue, text="Danh sách BN", select=True)
+        patient_book.AddPage(page=self.seentoday, text="Đã khám hôm nay")
+        patient_book.AddPage(page=self.follow_up, text="Tái khám")
+        self.visit_list = visit.List(self)
         patient_info = wx.StaticBoxSizer(wx.VERTICAL, self, label="Thông tin bệnh nhân")
         self.patient_box = patient_info.GetStaticBox()
         self.patient_box.SetOwnBackgroundColour(
@@ -76,16 +72,7 @@ class MainFrame(wx.Frame):
         self.visit_weight = NumCtrl(
             self.visit_box, fractionWidth=1, min=0, limited=True
         )
-        get_weight = wx.BitmapButton(
-            self.visit_box, bitmap=wx.BitmapBundle(wx.Bitmap(str(WEIGHT_BM)))
-        )
-        get_weight.SetToolTip("Lấy cân nặng mới nhất")
-        self.visit_days = IntCtrl(
-            self.visit_box,
-            value=get_app().config["process"]["default_days_for_prescription"],
-            min=0,
-            limited=True,
-        )
+        self.visit_days = IntCtrl(self.visit_box, min=0, limited=True)
         self.visit_price = IntCtrl(self.visit_box, min=0, limited=True)
         self.visit_price_txt = wx.StaticText(
             self.visit_box, label="", size=wx.Size(100, -1)
@@ -106,49 +93,26 @@ class MainFrame(wx.Frame):
         self.medicine_usage_unit = wx.StaticText(medicine_page, label="{đơn vị}")
         self.medicine_quantity = IntCtrl(medicine_page, min=0, limited=True)
         self.medicine_selling_unit = wx.StaticText(medicine_page, label="{đơn vị}")
-        self.medicine_usage_note = wx.TextCtrl(medicine_page)
-        self.medicine_price_txt = wx.StaticText(
-            medicine_page, label="Đơn giá: ", size=wx.Size(150, -1)
+        self.medicine_usage_note = wx.TextCtrl(medicine_page, size=wx.Size(250, -1))
+        self.medicine_usage_note_txt = wx.StaticText(
+            medicine_page, label="", size=wx.Size(500, -1)
         )
-        medicine_buttons = wx.Panel(medicine_page, size=wx.Size(120, -1))
         self.medicine_add_btn = wx.BitmapButton(
-            medicine_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
-        )
-        self.medicine_upd_btn = wx.BitmapButton(
-            medicine_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(UPDATE_BM)))
+            medicine_page, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
         )
         self.medicine_del_btn = wx.BitmapButton(
-            medicine_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
-        )
-        self.medicine_ok_btn = wx.BitmapButton(
-            medicine_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(OK_BM)))
-        )
-        self.medicine_cancel_btn = wx.BitmapButton(
-            medicine_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(CANCEL_BM)))
+            medicine_page, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
         )
         self.medicine_list = medicine.List(medicine_page)
 
         service_page = wx.Panel(order_info)
         self.service_search = service.Picker(service_page)
         self.service_quantity = IntCtrl(service_page, min=0, limited=True)
-        self.service_price_txt = wx.StaticText(
-            service_page, label="Đơn giá: ", size=wx.Size(150, -1)
-        )
-        service_buttons = wx.Panel(service_page, size=wx.Size(120, -1))
         self.service_add_btn = wx.BitmapButton(
-            service_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
-        )
-        self.service_upd_btn = wx.BitmapButton(
-            service_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(UPDATE_BM)))
+            service_page, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
         )
         self.service_del_btn = wx.BitmapButton(
-            service_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
-        )
-        self.service_ok_btn = wx.BitmapButton(
-            service_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(OK_BM)))
-        )
-        self.service_cancel_btn = wx.BitmapButton(
-            service_buttons, bitmap=wx.BitmapBundle(wx.Bitmap(str(CANCEL_BM)))
+            service_page, bitmap=wx.BitmapBundle(wx.Bitmap(str(MINUS_BM)))
         )
         self.service_list = service.List(service_page)
 
@@ -207,7 +171,6 @@ class MainFrame(wx.Frame):
         row1 = row(
             static(self.visit_box, "Cân nặng: ", 100),
             (self.visit_weight, 0, EA, 2),
-            (get_weight, 0, EA, 2),
             static(self.visit_box, "Số ngày thuốc: "),
             (self.visit_days, 0, EA, 2),
             (0, 0, 3),
@@ -236,16 +199,6 @@ class MainFrame(wx.Frame):
             ]
         )
 
-        medicine_buttons.SetSizer(
-            row(
-                (self.medicine_add_btn, 0, EA, 2),
-                (self.medicine_upd_btn, 0, EA, 2),
-                (self.medicine_del_btn, 0, EA, 2),
-                (self.medicine_ok_btn, 0, EA, 2),
-                (self.medicine_cancel_btn, 0, EA, 2),
-            )
-        )
-
         row1 = row(
             static(medicine_page, "Thuốc: ", 100),
             (self.medicine_search, 1, EA, 2),
@@ -257,25 +210,16 @@ class MainFrame(wx.Frame):
             static(medicine_page, "Tổng: "),
             (self.medicine_quantity, 0, EA, 2),
             (self.medicine_selling_unit, 0, wx.ALIGN_CENTER_VERTICAL, 2),
-            (medicine_buttons, 0, EA, 2),
+            (self.medicine_add_btn, 0, EA, 2),
+            (self.medicine_del_btn, 0, EA, 2),
         )
         row2 = row(
-            static(medicine_page, "Cách sử dụng:", 120),
-            (self.medicine_usage_note, 1, EA, 2),
-            (self.medicine_price_txt, 0, wx.ALIGN_CENTER_VERTICAL, 2),
+            static(medicine_page, "Ghi chú:", 100),
+            (self.medicine_usage_note, 0, EA, 2),
+            (self.medicine_usage_note_txt, 0, wx.ALIGN_CENTER_VERTICAL, 2),
         )
         medicine_page.SetSizer(
             column((row1, 0, EA, 5), (row2, 0, EA, 5), (self.medicine_list, 1, EA, 5))
-        )
-
-        service_buttons.SetSizer(
-            row(
-                (self.service_add_btn, 0, EA, 2),
-                (self.service_upd_btn, 0, EA, 2),
-                (self.service_del_btn, 0, EA, 2),
-                (self.service_ok_btn, 0, EA, 2),
-                (self.service_cancel_btn, 0, EA, 2),
-            )
         )
 
         row1 = row(
@@ -283,15 +227,15 @@ class MainFrame(wx.Frame):
             (self.service_search, 1, EA, 2),
             static(service_page, "Tổng: "),
             (self.service_quantity, 0, EA, 2),
-            (self.service_price_txt, 0, wx.ALIGN_CENTER_VERTICAL, 2),
-            (service_buttons, 0, EA, 2),
+            (self.service_add_btn, 0, EA, 2),
+            (self.service_del_btn, 0, EA, 2),
         )
         service_page.SetSizer(column((row1, 0, EA, 5), (self.service_list, 1, EA, 5)))
 
         left = column(
             (patient_search, 0, EA, 5),
             (patient_book, 2, EA, 5),
-            (visit_list, 1, EA, 5),
+            (self.visit_list, 1, EA, 5),
         )
         right = column(
             (patient_info, 0, EA, 5),
@@ -315,20 +259,25 @@ class MainFrame(wx.Frame):
         # DATA
         self._patient_id: int | None
         self._visit_id: int | None
-        self._medicine_id: int | None
-        self._service_id: int | None
+        self._medicine: MedicineStore | None
+        self._service: ServiceStore | None
 
+        patient_search.Bind(wx.EVT_SEARCH, self.on_patient_search)
         patient_book.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_patient_select)
         patient_book.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
-        visit_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
-        visit_list.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
+        self.visit_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
+        self.visit_list.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
         self.patient_birthdate.Bind(wx.adv.EVT_DATE_CHANGED, self.on_date_changed)
         self.patient_new_btn.Bind(wx.EVT_BUTTON, self.on_patient_new_btn)
         self.patient_upd_btn.Bind(wx.EVT_BUTTON, self.on_patient_upd_btn)
         self.patient_ok_btn.Bind(wx.EVT_BUTTON, self.on_patient_ok_btn)
         self.patient_cancel_btn.Bind(wx.EVT_BUTTON, self.on_patient_cancel_btn)
-        get_weight.Bind(wx.EVT_BUTTON, self.on_get_weight)
         self.visit_price.Bind(wx.EVT_TEXT, self.on_price_changed)
+
+        self.visit_days.SetValue(
+            get_app().config["process"]["default_days_for_prescription"]
+        )
+        self.visit_price.SetValue(get_app().config["process"]["price"])
         self.patient_edit_mode(False)
         self.visit_edit_mode(False)
         self.medicine_edit_mode(False)
@@ -349,6 +298,7 @@ class MainFrame(wx.Frame):
             self.patient_birthdate.SetValue(wx.DateTime.Today())
             self.patient_past_history.Clear()
             self.patient_upd_btn.Disable()
+            self.visit_list.DeleteAllItems()
         else:
             try:
                 self._patient_id = value
@@ -366,8 +316,21 @@ class MainFrame(wx.Frame):
                 self.patient_birthdate.SetValue(patient["birthdate"])
                 self.patient_past_history.SetValue(patient["past_history"])
                 self.patient_upd_btn.Enable()
+                for item in (
+                    get_app()
+                    .conn.execute(
+                        """
+                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
+                        ORDER BY id DESC
+                        """,
+                        (value,),
+                    )
+                    .fetchall()
+                ):
+                    self.visit_list.append(item)
+
             except sqlite3.Error as error:
-                wx.MessageBox("Lỗi", str(error))
+                wx.MessageBox(str(error), "Lỗi")
 
     @property
     def visit_id(self) -> int | None:
@@ -379,52 +342,104 @@ class MainFrame(wx.Frame):
             self._visit_id = None
             self.visit_box.SetLabel("Thông tin lượt khám")
             self.visit_weight.SetValue(0)
-            # TODO
+            self.visit_days.SetValue(
+                get_app().config["process"]["default_days_for_prescription"]
+            )
+            self.visit_price.SetValue(get_app().config["process"]["price"])
+            self.visit_medical_history.Clear()
             self.visit_diagnosis.Clear()
+            self.visit_note.Clear()
+            self.visit_same_btn.Disable()
+            self.visit_upd_btn.Disable()
+            self.medicine = None
+            self.service = None
+            self.medicine_list.DeleteAllItems()
+            self.service_list.DeleteAllItems()
         else:
-            ...
+            self._visit_id = value
+            visit = (
+                get_app()
+                .conn.execute(
+                    """
+                    SELECT weight, days, medical_history, diagnosis, note, price
+                    FROM visits
+                    WHERE id = ?
+                    """,
+                    (value,),
+                )
+                .fetchone()
+            )
+            self.visit_box.SetLabel(f"Thông tin lượt khám: {value}")
+            self.visit_weight.SetValue(visit["weight"] / 10)
+            self.visit_days.SetValue(visit["days"])
+            self.visit_price.SetValue(visit["price"])
+            self.visit_medical_history.ChangeValue(visit["medical_history"])
+            self.visit_diagnosis.ChangeValue(visit["diagnosis"])
+            self.visit_note.ChangeValue(visit["note"])
+            self.visit_same_btn.Enable()
+            self.visit_upd_btn.Enable()
+            for item in (
+                get_app()
+                .conn.execute(
+                    """
+                    SELECT s.name, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
+                    FROM (SELECT visit_id, medicine_id, times, dose, quantity, usage_note FROM medicines WHERE visit_id=?) AS m
+                    JOIN (SELECT id, name, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
+                    WHERE s.id = m.medicine_id
+                    """,
+                    (value,),
+                )
+                .fetchall()
+            ):
+                self.medicine_list.append(item)
+            for item in (
+                get_app()
+                .conn.execute(
+                    """
+                    SELECT s.name, m.quantity, s.price
+                    FROM (SELECT visit_id, service_id, quantity FROM services WHERE visit_id=?) AS m
+                    JOIN (SELECT id, name, price FROM service_store) AS s
+                    WHERE s.id = m.service_id
+                    """,
+                    (value,),
+                )
+                .fetchall()
+            ):
+                self.service_list.append(item)
+            # last_weight = (
+            #     get_app()
+            #     .conn.execute(
+            #         """
+            #     SELECT weight FROM visits WHERE patient_id = ?
+            #     ORDER BY exam_datetime DESC
+            #     LIMIT 1
+            #         """,
+            #         (id,),
+            #     )
+            #     .fetchone()
+            # )
+            # if last_weight:
+            #     self.visit_weight.SetValue(last_weight / 10)
+            # else:
+            #     self.visit_weight.SetValue(0)
 
     @property
-    def medicine_id(self) -> int | None:
-        self._medicine_id
+    def medicine(self) -> MedicineStore | None:
+        self._medicine
 
-    @medicine_id.setter
-    def medicine_id(self, value: int | None):
+    @medicine.setter
+    def medicine(self, value: MedicineStore | None):
         # TODO
         ...
 
     @property
-    def service_id(self) -> int | None:
-        self._medicine_id
+    def service(self) -> ServiceStore | None:
+        self._service
 
-    @service_id.setter
-    def service_id(self, value: int | None):
+    @service.setter
+    def service(self, value: ServiceStore | None):
         # TODO
         ...
-
-    def on_patient_select(self, e: wx.ListEvent):
-        self.patient_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
-
-    def on_patient_deselect(self, _: wx.ListEvent):
-        self.patient_id = None
-
-    def on_visit_select(self, e: wx.ListEvent):
-        self.visit_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
-
-    def on_visit_deselect(self, _: wx.ListEvent):
-        self.visit_id = None
-
-    def on_medicine_select(self, e: wx.ListEvent):
-        self.medicine_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 1))
-
-    def on_medicine_deselect(self, _: wx.ListEvent):
-        self.medicine_id = None
-
-    def on_service_select(self, e: wx.ListEvent):
-        self.service_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 1))
-
-    def on_service_deselect(self, _: wx.ListEvent):
-        self.service_id = None
 
     def patient_edit_mode(self, b: bool = True):
         self.patient_name.Enable(b)
@@ -450,27 +465,37 @@ class MainFrame(wx.Frame):
         self.visit_cancel_btn.Show(b)
 
     def medicine_edit_mode(self, b: bool = True):
-        self.medicine_search.Enable(b)
         self.medicine_times.Enable(b)
         self.medicine_dose.Enable(b)
         self.medicine_quantity.Enable(b)
         self.medicine_usage_note.Enable(b)
-        self.medicine_add_btn.Show(not b)
-        self.medicine_upd_btn.Show(not b)
-        self.medicine_del_btn.Show(not b)
-        self.medicine_ok_btn.Show(b)
-        self.medicine_cancel_btn.Show(b)
 
     def service_edit_mode(self, b: bool = True):
-        self.service_search.Enable(b)
         self.service_quantity.Enable(b)
-        self.service_add_btn.Show(not b)
-        self.service_upd_btn.Show(not b)
-        self.service_del_btn.Show(not b)
-        self.service_ok_btn.Show(b)
-        self.service_cancel_btn.Show(b)
 
     def refresh(self): ...
+
+    def on_patient_search(self, e: wx.CommandEvent):
+        for item in get_app().conn.execute(
+            """
+            SELECT id, name, gender, birthdate from patients
+            WHERE name LIKE ?
+            """,
+            ("%" + e.String.upper() + "%",),
+        ):
+            self.queue.append(item)
+
+    def on_patient_select(self, e: wx.ListEvent):
+        self.patient_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
+
+    def on_patient_deselect(self, _: wx.ListEvent):
+        self.patient_id = None
+
+    def on_visit_select(self, e: wx.ListEvent):
+        self.visit_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
+
+    def on_visit_deselect(self, _: wx.ListEvent):
+        self.visit_id = None
 
     def on_date_changed(self, e: wx.adv.DateEvent):
         self.patient_age.ChangeValue(bd_to_vn_age(e.GetDate()))
@@ -497,7 +522,7 @@ class MainFrame(wx.Frame):
             else:
                 update(get_app().conn, patient, id)
         except sqlite3.Error as error:
-            wx.MessageBox("Lỗi", str(error))
+            wx.MessageBox(str(error), "Lỗi")
 
         self.patient_edit_mode(False)
 
@@ -509,26 +534,6 @@ class MainFrame(wx.Frame):
             self.patient_id = id
 
         self.patient_edit_mode(False)
-
-    def on_get_weight(self, _):
-        id = self.patient_id
-        if id is not None:
-            try:
-                last_weight = (
-                    get_app()
-                    .conn.execute(
-                        """
-                    SELECT weight FROM visits WHERE patient_id = ?
-                    ORDER BY exam_datetime DESC
-                    LIMIT 1
-                        """,
-                        (id,),
-                    )
-                    .fetchone()
-                )
-                self.visit_weight.SetValue(last_weight / 10)
-            except sqlite3.Error as error:
-                wx.MessageBox("Lỗi", str(error))
 
     def on_price_changed(self, e):
         self.visit_price_txt.SetLabel(f"{int(e.String):,}")

@@ -19,7 +19,7 @@ class AddDialog(Dialog):
             app.fetch_service_store()
             self.Close()
         except sqlite3.Error as error:
-            wx.MessageBox("Thêm mới thất bại", f"{error}")
+            wx.MessageBox(str(error), "Thêm mới thất bại")
 
 
 class UpdateDialog(Dialog):
@@ -36,4 +36,4 @@ class UpdateDialog(Dialog):
             app.fetch_service_store()
             self.Close()
         except sqlite3.Error as error:
-            wx.MessageBox("Cập nhật thất bại", f"{error}")
+            wx.MessageBox(str(error), "Cập nhật thất bại")

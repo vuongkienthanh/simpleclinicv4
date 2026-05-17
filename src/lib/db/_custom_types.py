@@ -4,6 +4,7 @@ import wx
 
 DATE_FORMAT = "%d/%m/%Y"
 
+
 def custom_type_date():
     def adapt(date: wx.DateTime) -> str:
         return date.Format(DATE_FORMAT)
