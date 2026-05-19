@@ -79,12 +79,12 @@ CREATE INDEX IF NOT EXISTS patient_name ON patients (name);
 
 CREATE VIEW IF NOT EXISTS seentoday
 (id, name, gender, birthdate) AS
-SELECT (p.id, p.name, p.gender, p.birthdate)
+SELECT p.id, p.name, p.gender, p.birthdate
 FROM patients AS p JOIN visits as v
 WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime) == DATE('now', 'localtime'));
 
 CREATE VIEW IF NOT EXISTS follow_up
 (id, name, gender, birthdate) AS
-SELECT (p.id, p.name, p.gender, p.birthdate)
+SELECT p.id, p.name, p.gender, p.birthdate
 FROM patients AS p JOIN visits as v
-WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime, "+" || v.days || " days") == DATE('now', 'localtime'));
+WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime, '+' || v.days || ' days') == DATE('now', 'localtime'));

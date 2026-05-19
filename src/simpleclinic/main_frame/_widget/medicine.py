@@ -1,25 +1,27 @@
+from webbrowser import get
 import wx
 import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
-from lib.models import MedicineStore
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Thuốc", width=-1)
+        self.AppendColumn("Mã", width=-1)
+        self.AppendColumn("Thuốc", width=200)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
         self.AppendColumn("Số lượng", width=-1)
-        self.AppendColumn("Cách sử dụng", width=300)
+        self.AppendColumn("Ghi chú", width=-1)
         self.AppendColumn("Giá", width=-1)
 
     def append(self, item: sqlite3.Row):
         self.Append(
             [
                 str(self.GetItemCount() + 1),
+                item["id"],
                 item["name"],
                 str(item["times"]),
                 f"{item['dose']} {item['usage_unit']}",
@@ -34,8 +36,7 @@ class Popup(wx.ComboPopup):
     def __init__(self):
         super().__init__()
         self.lc: wx.ListCtrl
-        # so many columns so i have to store temp list to retrieve item later
-        self._list = []
+        self._ptr_list: list[int] = []
         self.curitem: int
 
     @override
@@ -76,13 +77,14 @@ class Popup(wx.ComboPopup):
         s: str = self.ComboCtrl.Value
         self.curitem = -1
         self.lc.DeleteAllItems()
-        self._list.clear()
+        self._ptr_list.clear()
         s = s.strip().casefold()
-        for item in filter(
-            lambda item: (
-                (s in item["name"].casefold()) or (s in item["element"].casefold())
+        for i, item in filter(
+            lambda elem: (
+                (s in elem[1]["name"].casefold())
+                or (s in elem[1]["element"].casefold())
             ),
-            get_app().medicine_store,
+            enumerate(get_app().medicine_store),
         ):
             self.lc.Append(
                 [
@@ -95,7 +97,7 @@ class Popup(wx.ComboPopup):
                     item["route"],
                 ]
             )
-            self._list.append(item)
+            self._ptr_list.append(i)
 
     def on_motion(self, e):
         index, _ = self.lc.HitTest(e.GetPosition())
@@ -105,24 +107,15 @@ class Popup(wx.ComboPopup):
 
     def on_left_down(self, _):
         if self.curitem >= 0:
-            self.select_drug()
+            self.select_item()
 
-    def select_drug(self):
-        cc = self.ComboCtrl
-        i = self.curitem
-        get_main_frame().medicine = MedicineStore(
-            name=self._list[i]["name"],
-            element=self._list[i]["element"],
-            route=self._list[i]["route"],
-            usage_unit=self._list[i]["usage_unit"],
-            quantity=self._list[i]["quantity"],
-            selling_unit=self._list[i]["selling_unit"],
-            cost_price=self._list[i]["cost_price"],
-            selling_price=self._list[i]["selling_price"],
-        )
+    def select_item(self):
+        get_main_frame().medicine = get_app().medicine_store[
+            self._ptr_list[self.curitem]
+        ]
         self.Dismiss()
-        cc.Value = self.lc.GetItemText(i, 1)
-        cc.Navigate()
+        self.ComboCtrl.Navigate()
+        get_main_frame().medicine_del_btn.Disable()
 
     def on_char(self, e: wx.KeyEvent):
         c = e.KeyCode
@@ -142,7 +135,7 @@ class Popup(wx.ComboPopup):
             self.Dismiss()
         elif c == wx.WXK_RETURN:
             if self.lc.ItemCount > 0:
-                self.select_drug()
+                self.select_item()
 
 
 class Picker(wx.ComboCtrl):
@@ -150,6 +143,7 @@ class Picker(wx.ComboCtrl):
         super().__init__(parent, style=wx.TE_PROCESS_ENTER)
         self.SetPopupControl(Popup())
         self.Bind(wx.EVT_CHAR, self.on_char)
+        self.Bind(wx.EVT_TEXT, self.on_text)
         self.SetHint("Enter để search thuốc")
 
     def on_char(self, e: wx.KeyEvent):
@@ -157,3 +151,6 @@ class Picker(wx.ComboCtrl):
             self.Popup()
         else:
             e.Skip()
+
+    def on_text(self, _):
+        get_main_frame().medicine = None

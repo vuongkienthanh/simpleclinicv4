@@ -1,4 +1,5 @@
 import wx
+from itertools import chain
 from lib.enums import Gender
 from lib.wx_helper import (
     NUMBERS,
@@ -7,6 +8,8 @@ from lib.wx_helper import (
     SLASH,
     DECIMAL,
 )
+
+INT_KEYS = NUMBERS + NUMPADS + SPECIALS
 
 
 class GenderChoiceCtrl(wx.Choice):
@@ -29,10 +32,32 @@ class DoseCtrl(wx.TextCtrl):
         self.Bind(wx.EVT_CHAR, self.on_char)
 
     def on_char(self, e: wx.KeyEvent):
-        keys = NUMBERS + NUMPADS + SPECIALS
         s = self.Value
         if "/" not in s and "." not in s:
-            keys += SLASH + DECIMAL
+            keys = chain(INT_KEYS, SLASH, DECIMAL)
+        else:
+            keys = INT_KEYS
 
         if e.KeyCode in keys:
             e.Skip()
+
+
+class ThousandGroupIntCtrl(wx.TextCtrl):
+    def __init__(self, parent: wx.Window):
+        super().__init__(parent)
+        self.Bind(wx.EVT_CHAR, self.on_char)
+        self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
+        self.Bind(wx.EVT_TEXT, self.on_text)
+
+    def on_char(self, e: wx.KeyEvent):
+        if e.KeyCode in INT_KEYS:
+            e.Skip()
+
+    def on_left_down(self, _):
+        self.SetFocus()
+        self.SetInsertionPointEnd()
+
+    def on_text(self, _):
+        if self.Value != "":
+            self.ChangeValue("{:,}".format(int(self.Value.replace(",", ""))))
+            self.SetInsertionPointEnd()

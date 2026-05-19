@@ -1,7 +1,6 @@
 import wx
 import sqlite3
 from typing import override
-from lib.models import ServiceStore
 from lib.wx_helper import get_app, get_main_frame
 
 
@@ -9,7 +8,8 @@ class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Dịch vụ", width=-1)
+        self.AppendColumn("Mã", width=-1)
+        self.AppendColumn("Dịch vụ", width=200)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Giá", width=-1)
 
@@ -17,6 +17,7 @@ class List(wx.ListCtrl):
         self.Append(
             [
                 str(self.GetItemCount() + 1),
+                item["id"],
                 item["name"],
                 str(item["quantity"]),
                 str(item["price"] * item["quantity"]),
@@ -28,6 +29,7 @@ class Popup(wx.ComboPopup):
     def __init__(self):
         super().__init__()
         self.lc: wx.ListCtrl
+        self._ptr_list: list[int] = []
         self.curitem: int
 
     @override
@@ -62,11 +64,13 @@ class Popup(wx.ComboPopup):
     @override
     def OnPopup(self):
         s: str = self.ComboCtrl.Value
+        self.curitem = -1
         self.lc.DeleteAllItems()
+        self._ptr_list.clear()
         s = s.strip().casefold()
-        for item in filter(
-            lambda item: s in item["name"].casefold(),
-            get_app().service_store,
+        for i, item in filter(
+            lambda elem: s in elem[1]["name"].casefold(),
+            enumerate(get_app().service_store),
         ):
             self.lc.Append(
                 [
@@ -75,6 +79,7 @@ class Popup(wx.ComboPopup):
                     item["price"],
                 ]
             )
+            self._ptr_list.append(i)
 
     def on_motion(self, e):
         index, _ = self.lc.HitTest(e.GetPosition())
@@ -84,17 +89,13 @@ class Popup(wx.ComboPopup):
 
     def on_left_down(self, _):
         if self.curitem >= 0:
-            self.select_drug()
+            self.select_item()
 
-    def select_drug(self):
-        cc = self.ComboCtrl
-        i = self.curitem
-        get_main_frame().service = ServiceStore(
-            name=self.lc.GetItemText(i, 1), price=int(self.lc.GetItemText(i, 2))
-        )
+    def select_item(self):
+        get_main_frame().service = get_app().service_store[self._ptr_list[self.curitem]]
         self.Dismiss()
-        cc.Value = self.lc.GetItemText(i, 1)
-        cc.Navigate()
+        self.ComboCtrl.Navigate()
+        get_main_frame().service_del_btn.Disable()
 
     def on_char(self, e: wx.KeyEvent):
         c = e.KeyCode
@@ -114,7 +115,7 @@ class Popup(wx.ComboPopup):
             self.Dismiss()
         elif c == wx.WXK_RETURN:
             if self.lc.ItemCount > 0:
-                self.select_drug()
+                self.select_item()
 
 
 class Picker(wx.ComboCtrl):
@@ -122,6 +123,7 @@ class Picker(wx.ComboCtrl):
         super().__init__(parent, style=wx.TE_PROCESS_ENTER)
         self.SetPopupControl(Popup())
         self.Bind(wx.EVT_CHAR, self.on_char)
+        self.Bind(wx.EVT_TEXT, self.on_text)
         self.SetHint("Enter để search dịch vụ")
 
     def on_char(self, e: wx.KeyEvent):
@@ -129,3 +131,6 @@ class Picker(wx.ComboCtrl):
             self.Popup()
         else:
             e.Skip()
+
+    def on_text(self, _):
+        get_main_frame().service = None

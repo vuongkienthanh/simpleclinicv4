@@ -33,6 +33,7 @@ reportMissingTypeStubs = false
 reportUnannotatedClassAttribute = false
 reportUnknownParameterType = false
 reportMissingParameterType = false
+reportUnknownLambdaType = false
 
 [project.scripts]
 init_db = "init_db:main"
