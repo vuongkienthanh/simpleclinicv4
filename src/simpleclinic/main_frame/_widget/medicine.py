@@ -1,15 +1,16 @@
-from webbrowser import get
+from collections.abc import Iterable
 import wx
 import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
+from lib.models import Medicine
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã", width=-1)
+        self.AppendColumn("Mã thuốc", width=-1)
         self.AppendColumn("Thuốc", width=200)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
@@ -30,6 +31,19 @@ class List(wx.ListCtrl):
                 str(item["selling_price"] * item["quantity"]),
             ]
         )
+
+    def to_model(self) -> Iterable[Medicine]:
+        visit_id = get_main_frame().visit_id
+        assert visit_id is not None
+        for i in range(self.ItemCount):
+            yield Medicine(
+                medicine_id=int(self.GetItemText(i, 1)),
+                visit_id=visit_id,
+                times=int(self.GetItemText(i, 3)),
+                dose=self.GetItemText(i, 4).split(" ", 1)[0],
+                quantity=int(self.GetItemText(i, 5).split(" ", 1)[0]),
+                usage_note=self.GetItemText(i, 6),
+            )
 
 
 class Popup(wx.ComboPopup):

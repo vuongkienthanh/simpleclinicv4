@@ -1,6 +1,8 @@
+from collections.abc import Iterable
 import wx
 import sqlite3
 from typing import override
+from lib.models import Service
 from lib.wx_helper import get_app, get_main_frame
 
 
@@ -8,7 +10,7 @@ class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã", width=-1)
+        self.AppendColumn("Mã DV", width=-1)
         self.AppendColumn("Dịch vụ", width=200)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Giá", width=-1)
@@ -23,6 +25,16 @@ class List(wx.ListCtrl):
                 str(item["price"] * item["quantity"]),
             ]
         )
+
+    def to_model(self) -> Iterable[Service]:
+        visit_id = get_main_frame().visit_id
+        assert visit_id is not None
+        for i in range(self.ItemCount):
+            yield Service(
+                service_id=int(self.GetItemText(i, 1)),
+                visit_id=visit_id,
+                quantity=int(self.GetItemText(i, 3)),
+            )
 
 
 class Popup(wx.ComboPopup):

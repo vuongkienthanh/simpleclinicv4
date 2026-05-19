@@ -434,22 +434,6 @@ class MainFrame(wx.Frame):
                 .fetchall()
             ):
                 self.service_list.append(item)
-            # last_weight = (
-            #     get_app()
-            #     .conn.execute(
-            #         """
-            #     SELECT weight FROM visits WHERE patient_id = ?
-            #     ORDER BY exam_datetime DESC
-            #     LIMIT 1
-            #         """,
-            #         (id,),
-            #     )
-            #     .fetchone()
-            # )
-            # if last_weight:
-            #     self.visit_weight.SetValue(last_weight / 10)
-            # else:
-            #     self.visit_weight.SetValue(0)
 
     @property
     def medicine(self) -> sqlite3.Row | None:
@@ -688,6 +672,22 @@ class MainFrame(wx.Frame):
         if self.patient_id is not None:
             self.visit_id = None
             self.visit_edit_mode()
+            last_weight = (
+                get_app()
+                .conn.execute(
+                    """
+                    SELECT weight FROM visits WHERE patient_id = ?
+                    ORDER BY exam_datetime DESC
+                    LIMIT 1
+                    """,
+                    (self.patient_id,),
+                )
+                .fetchone()
+            )
+            if last_weight:
+                self.visit_weight.SetValue(last_weight / 10)
+            else:
+                self.visit_weight.SetValue(0)
 
     def on_visit_same_btn(self, _):
         if self.patient_id is not None:
@@ -710,15 +710,35 @@ class MainFrame(wx.Frame):
                 note=self.visit_note.Value.strip(),
                 price=int(self.visit_price.Value.replace(",", "")),
             )
-            # TODO
             try:
                 if id is None:
                     id = insert(get_app().conn, visit)
                     self._visit_id = id
-                    # TODO
+                    [
+                        insert(get_app().conn, item)
+                        for item in self.medicine_list.to_model()
+                    ]
+                    [
+                        insert(get_app().conn, item)
+                        for item in self.service_list.to_model()
+                    ]
                 else:
                     update(get_app().conn, visit, id)
-                    # TODO
+                    get_app().conn.execute(
+                        "DELETE FROM medicines WHERE visit_id = ?", (id,)
+                    )
+                    get_app().conn.execute(
+                        "DELETE FROM services WHERE visit_id = ?", (id,)
+                    )
+                    [
+                        insert(get_app().conn, item)
+                        for item in self.medicine_list.to_model()
+                    ]
+                    [
+                        insert(get_app().conn, item)
+                        for item in self.service_list.to_model()
+                    ]
+
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
             self.visit_edit_mode(False)
