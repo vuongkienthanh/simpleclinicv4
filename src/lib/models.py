@@ -1,5 +1,4 @@
 from lib.enums import Gender
-import wx
 
 from dataclasses import dataclass
 from typing import ClassVar, final
@@ -16,7 +15,7 @@ class Patient(BASEMODEL):
     __tablename__ = "patients"
     name: str
     gender: Gender
-    birthdate: wx.DateTime
+    birthdate: str
     past_history: str
 
 

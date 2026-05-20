@@ -3,18 +3,20 @@ import sqlite3
 import wx
 
 
-
 def custom_type_datetime():
-    def adapt(datetime: wx.DateTime) -> str:
-        return datetime.FormatISOCombined()
 
-    def convert(b: bytes) -> wx.DateTime:
+    def convert_datetime(b: bytes) -> wx.DateTime:
         d = wx.DateTime()
         d.ParseISOCombined(b.decode())
         return d
 
-    sqlite3.register_adapter(wx.DateTime, adapt)
-    sqlite3.register_converter("DATETIME", convert)
+    def convert_date(b: bytes) -> wx.DateTime:
+        d = wx.DateTime()
+        d.ParseISODate(b.decode())
+        return d
+
+    sqlite3.register_converter("DATETIME", convert_datetime)
+    sqlite3.register_converter("DATE", convert_date)
 
 
 def custom_type_gender():

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL CHECK (name <> ''),
     gender GENDER NOT NULL,
-    birthdate DATETIME NOT NULL,
+    birthdate DATE NOT NULL,
     past_history TEXT NOT NULL,
     misc TEXT
 );

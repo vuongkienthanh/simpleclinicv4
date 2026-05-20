@@ -6,6 +6,7 @@ import wx
 import wx.adv
 from wx.lib.intctrl import IntCtrl
 
+from lib import DATE_FORMAT
 from lib.paths import (
     MEDICINE_BM,
     SERVICE_BM,
@@ -67,7 +68,7 @@ class MainFrame(wx.Frame):
         self.patient_past_history = wx.TextCtrl(
             self.patient_box, style=wx.TE_MULTILINE, size=wx.Size(-1, 75)
         )
-        self.patient_new_btn = wx.Button(self.patient_box, label="BN Mới (CTRL + N)")
+        self.patient_new_btn = wx.Button(self.patient_box, label="BN Mới")
         self.patient_upd_btn = wx.Button(self.patient_box, label="Cập nhật")
         self.patient_ok_btn = wx.Button(self.patient_box, label="OK")
         self.patient_cancel_btn = wx.Button(self.patient_box, label="Cancel")
@@ -131,7 +132,7 @@ class MainFrame(wx.Frame):
         self.visit_new_btn = wx.Button(self, label="Lượt khám mới")
         self.visit_same_btn = wx.Button(self, label="Lượt khám mới (toa cũ)")
         self.visit_upd_btn = wx.Button(self, label="Cập nhật")
-        self.visit_ok_btn = wx.Button(self, label="OK (CTRL+S)")
+        self.visit_ok_btn = wx.Button(self, label="OK")
         self.visit_cancel_btn = wx.Button(self, label="Cancel")
 
         def static(parent, label: str, w=-1):
@@ -657,7 +658,7 @@ class MainFrame(wx.Frame):
         patient = Patient(
             name=self.patient_name.Value.strip().upper(),
             gender=self.patient_gender.GetGender(),
-            birthdate=self.patient_birthdate.Value,
+            birthdate=self.patient_birthdate.Value.Format(DATE_FORMAT),
             past_history=self.patient_past_history.Value.strip(),
         )
         try:
