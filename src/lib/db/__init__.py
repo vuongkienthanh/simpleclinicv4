@@ -7,7 +7,6 @@ from itertools import chain
 from lib.models import BASEMODEL
 from ._custom_types import *
 
-custom_type_date()
 custom_type_datetime()
 custom_type_gender()
 

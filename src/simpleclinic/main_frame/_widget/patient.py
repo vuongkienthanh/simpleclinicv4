@@ -1,6 +1,6 @@
 import wx
 import sqlite3
-from lib.db import DATE_FORMAT
+from lib import DATE_FORMAT
 
 
 class List(wx.ListCtrl):

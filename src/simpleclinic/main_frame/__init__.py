@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import cast
 from math import ceil
 from fractions import Fraction
@@ -5,7 +6,6 @@ import sqlite3
 import wx
 import wx.adv
 from wx.lib.intctrl import IntCtrl
-from wx.lib.masked.numctrl import NumCtrl
 
 from lib.paths import (
     MEDICINE_BM,
@@ -14,7 +14,12 @@ from lib.paths import (
     MINUS_BM,
 )
 from lib.wx_helper import get_app, row, column, EA
-from lib.wx_helper.widget import GenderChoiceCtrl, DoseCtrl, ThousandGroupIntCtrl
+from lib.wx_helper.widget import (
+    GenderChoiceCtrl,
+    DoseCtrl,
+    ThousandGroupIntCtrl,
+    DecimalIntCtrl,
+)
 from lib.models import Patient, Visit
 from lib.enums import Gender
 from lib.db import insert, update
@@ -71,9 +76,7 @@ class MainFrame(wx.Frame):
         self.visit_box.SetOwnBackgroundColour(
             wx.Colour(*get_app().config["theme"]["visit_info"])
         )
-        self.visit_weight = NumCtrl(
-            self.visit_box, fractionWidth=1, min=0, limited=True
-        )
+        self.visit_weight = DecimalIntCtrl(self.visit_box)
         self.visit_days = IntCtrl(self.visit_box, min=0, limited=True)
         self.visit_price = ThousandGroupIntCtrl(self.visit_box)
         self.visit_medical_history = wx.TextCtrl(self.visit_box, style=wx.TE_MULTILINE)
@@ -266,6 +269,22 @@ class MainFrame(wx.Frame):
         patient_book.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
         self.visit_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
         self.visit_list.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
+        self.patient_gender.Bind(
+            wx.EVT_KEY_DOWN,
+            lambda e: (
+                self.patient_birthdate.SetFocus()
+                if e.KeyCode == wx.WXK_TAB and e.GetModifiers() == wx.MOD_NONE
+                else e.Skip()
+            ),
+        )
+        self.patient_past_history.Bind(
+            wx.EVT_KEY_DOWN,
+            lambda e: (
+                self.patient_birthdate.SetFocus()
+                if e.KeyCode == wx.WXK_TAB and e.GetModifiers() == wx.MOD_SHIFT
+                else e.Skip()
+            ),
+        )
         self.patient_birthdate.Bind(wx.adv.EVT_DATE_CHANGED, self.on_date_changed)
         self.patient_new_btn.Bind(wx.EVT_BUTTON, self.on_patient_new_btn)
         self.patient_upd_btn.Bind(wx.EVT_BUTTON, self.on_patient_upd_btn)
@@ -306,7 +325,7 @@ class MainFrame(wx.Frame):
         self.visit_days.ChangeValue(
             get_app().config["process"]["default_days_for_prescription"]
         )
-        self.visit_price.SetValue(str(get_app().config["process"]["price"]))
+        self.visit_price.SetInt(get_app().config["process"]["price"])
         self.patient_search.SetFocus()
 
         self.populate_seentoday()
@@ -314,7 +333,7 @@ class MainFrame(wx.Frame):
 
     @property
     def patient_id(self) -> int | None:
-        self._patient_id
+        return self._patient_id
 
     @patient_id.setter
     def patient_id(self, value: int | None):
@@ -327,6 +346,7 @@ class MainFrame(wx.Frame):
             self.patient_past_history.Clear()
             self.patient_upd_btn.Disable()
             self.visit_list.DeleteAllItems()
+            self.visit_id = None
         else:
             try:
                 self._patient_id = value
@@ -362,18 +382,18 @@ class MainFrame(wx.Frame):
 
     @property
     def visit_id(self) -> int | None:
-        self._visit_id
+        return self._visit_id
 
     @visit_id.setter
     def visit_id(self, value: int | None):
         if value is None:
             self._visit_id = None
             self.visit_box.SetLabel("Thông tin lượt khám")
-            self.visit_weight.SetValue(0)
+            self.visit_weight.SetInt(Decimal())
             self.visit_days.SetValue(
                 get_app().config["process"]["default_days_for_prescription"]
             )
-            self.visit_price.SetValue(str(get_app().config["process"]["price"]))
+            self.visit_price.SetInt(get_app().config["process"]["price"])
             self.visit_medical_history.Clear()
             self.visit_diagnosis.Clear()
             self.visit_note.Clear()
@@ -398,9 +418,9 @@ class MainFrame(wx.Frame):
                 .fetchone()
             )
             self.visit_box.SetLabel(f"Thông tin lượt khám: {value}")
-            self.visit_weight.SetValue(visit["weight"] / 10)
+            self.visit_weight.SetInt(Decimal(visit["weight"]) / 10)
             self.visit_days.SetValue(visit["days"])
-            self.visit_price.SetValue(visit["price"])
+            self.visit_price.SetInt(visit["price"])
             self.visit_medical_history.ChangeValue(visit["medical_history"])
             self.visit_diagnosis.ChangeValue(visit["diagnosis"])
             self.visit_note.ChangeValue(visit["note"])
@@ -437,7 +457,7 @@ class MainFrame(wx.Frame):
 
     @property
     def medicine(self) -> sqlite3.Row | None:
-        self._medicine
+        return self._medicine
 
     @medicine.setter
     def medicine(self, value: sqlite3.Row | None):
@@ -459,7 +479,7 @@ class MainFrame(wx.Frame):
 
     @property
     def service(self) -> sqlite3.Row | None:
-        self._service
+        return self._service
 
     @service.setter
     def service(self, value: sqlite3.Row | None):
@@ -658,7 +678,8 @@ class MainFrame(wx.Frame):
                 update(get_app().conn, patient, id)
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
-        self.patient_edit_mode(False)
+        finally:
+            self.patient_edit_mode(False)
 
     def on_patient_cancel_btn(self, _):
         id = self.patient_id
@@ -676,18 +697,19 @@ class MainFrame(wx.Frame):
                 get_app()
                 .conn.execute(
                     """
-                    SELECT weight FROM visits WHERE patient_id = ?
-                    ORDER BY exam_datetime DESC
-                    LIMIT 1
-                    """,
+                        SELECT weight FROM visits WHERE patient_id = ?
+                        ORDER BY exam_datetime DESC
+                        LIMIT 1
+                        """,
                     (self.patient_id,),
                 )
-                .fetchone()
+                .fetchone()["weight"]
             )
+
             if last_weight:
-                self.visit_weight.SetValue(last_weight / 10)
+                self.visit_weight.SetInt(Decimal(last_weight) / 10)
             else:
-                self.visit_weight.SetValue(0)
+                self.visit_weight.SetInt(Decimal())
 
     def on_visit_same_btn(self, _):
         if self.patient_id is not None:
@@ -703,12 +725,12 @@ class MainFrame(wx.Frame):
             id = self.visit_id
             visit = Visit(
                 patient_id=self.patient_id,
-                weight=int(self.visit_weight.Value * 10),
+                weight=int(self.visit_weight.GetInt() * 10),
                 medical_history=self.visit_medical_history.Value.strip(),
                 diagnosis=self.visit_diagnosis.Value.strip(),
                 days=int(self.visit_days.Value),
                 note=self.visit_note.Value.strip(),
-                price=int(self.visit_price.Value.replace(",", "")),
+                price=self.visit_price.GetInt(),
             )
             try:
                 if id is None:
@@ -738,10 +760,23 @@ class MainFrame(wx.Frame):
                         insert(get_app().conn, item)
                         for item in self.service_list.to_model()
                     ]
-
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
-            self.visit_edit_mode(False)
+            finally:
+                self.visit_list.DeleteAllItems()
+                for item in (
+                    get_app()
+                    .conn.execute(
+                        """
+                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
+                        ORDER BY id DESC
+                        """,
+                        (self.patient_id,),
+                    )
+                    .fetchall()
+                ):
+                    self.visit_list.append(item)
+                self.visit_edit_mode(False)
 
     def on_visit_cancel_btn(self, _):
         if self.patient_id is not None:

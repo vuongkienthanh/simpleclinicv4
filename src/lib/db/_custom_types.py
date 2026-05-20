@@ -2,20 +2,6 @@ from lib.enums import Gender
 import sqlite3
 import wx
 
-DATE_FORMAT = "%d/%m/%Y"
-
-
-def custom_type_date():
-    def adapt(date: wx.DateTime) -> str:
-        return date.Format(DATE_FORMAT)
-
-    def convert(b: bytes) -> wx.DateTime:
-        d = wx.DateTime()
-        d.ParseFormat(b.decode(), format=DATE_FORMAT)
-        return d
-
-    sqlite3.register_adapter(wx.DateTime, adapt)
-    sqlite3.register_converter("DATE", convert)
 
 
 def custom_type_datetime():
@@ -28,7 +14,7 @@ def custom_type_datetime():
         return d
 
     sqlite3.register_adapter(wx.DateTime, adapt)
-    sqlite3.register_converter("TIMESTAMP", convert)
+    sqlite3.register_converter("DATETIME", convert)
 
 
 def custom_type_gender():

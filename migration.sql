@@ -2,7 +2,7 @@
 -- new simpleclinic.db
 
 INSERT INTO simpleclinic.patients (id, name, gender, birthdate)
-SELECT MAX(id), name, gender, birthdate
+SELECT MAX(id), name, gender, strftime('%FT%T',DATETIME(birthdate))
 FROM patients
 GROUP BY name;
 
@@ -10,7 +10,7 @@ INSERT INTO simpleclinic.visits (id, patient_id, exam_datetime, weight, days, me
 SELECT id, patient_id, exam_datetime, weight, days, IFNULL(vnote, ''), diagnosis, IFNULL(follow, ''), price
 FROM visits;
 
-UPDATE simpleclinic.visits SET exam_datetime = strftime('%Y-%m-%dT%H:%M:%S', DATETIME(exam_datetime));
+UPDATE simpleclinic.visits SET exam_datetime = strftime('%FT%T', DATETIME(exam_datetime));
 
 INSERT INTO simpleclinic.medicine_store (id, name, element, quantity, route, usage_unit, selling_unit, cost_price, selling_unit)
 SELECT id, name, element, quantity, usage, usage_unit, IFNULL(sale_unit, usage_unit), purchase_price, sale_price FROM warehouse;

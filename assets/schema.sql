@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL CHECK (name <> ''),
     gender GENDER NOT NULL,
-    birthdate DATE NOT NULL,
+    birthdate DATETIME NOT NULL,
     past_history TEXT NOT NULL,
     misc TEXT
 );
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS patients (
 CREATE TABLE IF NOT EXISTS visits (
     id INTEGER PRIMARY KEY,
     patient_id INTEGER NOT NULL,
-    exam_datetime TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+    exam_datetime DATETIME DEFAULT (strftime('%FT%T', datetime('now', 'localtime'))),
     weight INTEGER NOT NULL CHECK (weight > 0), -- real weight /10
     medical_history TEXT NOT NULL,
     diagnosis TEXT NOT NULL CHECK (diagnosis <> ''),

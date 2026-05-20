@@ -8,6 +8,7 @@ from lib.wx_helper import (
     SLASH,
     DECIMAL,
 )
+from decimal import Decimal
 
 INT_KEYS = NUMBERS + NUMPADS + SPECIALS
 
@@ -42,6 +43,28 @@ class DoseCtrl(wx.TextCtrl):
             e.Skip()
 
 
+class DecimalIntCtrl(wx.TextCtrl):
+    def __init__(self, parent: wx.Window):
+        super().__init__(parent)
+        self.Bind(wx.EVT_CHAR, self.on_char)
+
+    def on_char(self, e: wx.KeyEvent):
+        s = self.Value
+        if "." in s:
+            keys = INT_KEYS
+        else:
+            keys = chain(INT_KEYS, DECIMAL)
+
+        if e.KeyCode in keys:
+            e.Skip()
+
+    def GetInt(self) -> Decimal:
+        return Decimal(self.Value)
+
+    def SetInt(self, value: Decimal):
+        self.ChangeValue(str(value))
+
+
 class ThousandGroupIntCtrl(wx.TextCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent)
@@ -61,3 +84,9 @@ class ThousandGroupIntCtrl(wx.TextCtrl):
         if self.Value != "":
             self.ChangeValue("{:,}".format(int(self.Value.replace(",", ""))))
             self.SetInsertionPointEnd()
+
+    def GetInt(self) -> int:
+        return int(self.Value.replace(",", ""))
+
+    def SetInt(self, value: int):
+        self.ChangeValue(f"{value:,}")
