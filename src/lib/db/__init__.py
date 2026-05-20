@@ -46,8 +46,6 @@ def insert(conn: Connection, t: BASEMODEL, misc: dict[str, Any] | None = None) -
 
 
 def update(conn: Connection, t: BASEMODEL, id: int, misc: dict[str, Any] | None = None):
-    if misc is None:
-        misc = {}
     with conn:
         field_names, value = _process_misc(t, misc)
         rowcount = conn.execute(
