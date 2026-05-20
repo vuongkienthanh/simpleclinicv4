@@ -3,14 +3,11 @@ import os
 import os.path
 import shutil
 import sqlite3
-from pathlib import Path
 from typing import cast
 
 import wx
-
-from db import LineDrug, Queue, Visit
-from misc import APP_DIR, CONFIG_PATH, DEFAULT_CONFIG_PATH, MY_DATABASE_PATH, SRC_DIR
-from app import mainview
+import wx.adv
+from lib.wx_helper import get_app, get_main_frame
 
 
 class MyMenuBar(wx.MenuBar):
@@ -18,9 +15,12 @@ class MyMenuBar(wx.MenuBar):
         super().__init__()
 
         homeMenu = wx.Menu()
-        homeMenu.Append(wx.ID_REFRESH, wx.GetStockLabel(wx.ID_REFRESH) + "\tF5")
+        homeMenu.Append(wx.ID_REFRESH, "&Refresh\tF5")
         homeMenu.Append(wx.ID_ABOUT)
-        homeMenu.Append(wx.ID_EXIT)
+        homeMenu.Append(wx.ID_EXIT, "&Exit\tCTRL+Q")
+        self.Bind(wx.EVT_MENU, lambda _: get_app().refresh(), id=wx.ID_REFRESH)
+        self.Bind(wx.EVT_MENU, self.onAbout, id=wx.ID_ABOUT)
+        self.Bind(wx.EVT_MENU, lambda _: get_main_frame().Close(), id=wx.ID_EXIT)
 
         editMenu = wx.Menu()
 
@@ -87,9 +87,6 @@ class MyMenuBar(wx.MenuBar):
         self.Append(manageMenu, "&Quản lý")
         self.Append(settingMenu, "&Hệ thống")
 
-        self.Bind(wx.EVT_MENU, self.onRefresh, id=wx.ID_REFRESH)
-        self.Bind(wx.EVT_MENU, self.onAbout, id=wx.ID_ABOUT)
-        self.Bind(wx.EVT_MENU, self.onExit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.onNewPatient, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.onFindPatient, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.onEditPatient, id=wx.ID_EDIT)
@@ -109,22 +106,13 @@ class MyMenuBar(wx.MenuBar):
         self.Bind(wx.EVT_MENU, self.onMonthWarehouseReport, menuMonthWarehouseReport)
         self.Bind(wx.EVT_MENU, self.onOpenConfigFolder, menuOpenConfigFolder)
 
-    def onRefresh(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        mv.state.refresh_all()
-
     def onAbout(self, _):
-        wx.MessageBox(
-            "Phần mềm phòng khám Simple Clinic\n"
-            "V3.3.8\n"
-            "Tác giả: Vương Kiến Thanh\n"
-            "Email: thanhstardust@outlook.com",
-            style=wx.OK | wx.CENTRE | wx.ICON_NONE,
-        )
-
-    def onExit(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        mv.Close()
+        info = wx.adv.AboutDialogInfo()
+        info.SetName(get_app().AppDisplayName)
+        info.SetVersion(get_app().version)
+        info.SetDescription(get_app().description)
+        info.SetCopyright(get_app().VendorDisplayName)
+        wx.adv.AboutBox(info)
 
     def onNewPatient(self, _):
         from app.dialogs import NewPatientDialog

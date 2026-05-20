@@ -1,7 +1,7 @@
 import wx
 from itertools import chain
 from lib.enums import Gender
-from lib.wx_helper import (
+from . import (
     NUMBERS,
     NUMPADS,
     SPECIALS,

@@ -1,6 +1,7 @@
 import wx
 import sqlite3
 from lib.vn import wxdatetime_to_vietnamese
+from lib.wx_helper import get_main_frame
 
 
 class List(wx.ListCtrl):
@@ -9,6 +10,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Mã lượt khám", width=-2)
         self.AppendColumn("Ngày giờ khám", width=200)
         self.AppendColumn("Chẩn đoán", width=300)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -18,3 +21,9 @@ class List(wx.ListCtrl):
                 item["diagnosis"],
             ]
         )
+
+    def on_visit_select(self, e: wx.ListEvent):
+        get_main_frame().visit_id = int(self.GetItemText(e.Index, 0))
+
+    def on_visit_deselect(self, _):
+        get_main_frame().visit_id = None

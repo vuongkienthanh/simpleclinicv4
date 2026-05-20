@@ -17,6 +17,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Ghi chú", width=-1)
         self.AppendColumn("Giá", width=-1)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_medicine_list_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_medicine_list_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -31,6 +33,23 @@ class List(wx.ListCtrl):
                 str(item["selling_price"] * item["quantity"]),
             ]
         )
+
+    def on_medicine_list_select(self, e: wx.ListEvent):
+        medicine_id = int(self.GetItemText(e.Index, 1))
+        for i, m in enumerate(get_app().medicine_store):
+            if m["id"] == medicine_id:
+                get_main_frame().medicine = get_app().medicine_store[i]
+                break
+        get_main_frame().medicine_times.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
+        get_main_frame().medicine_dose.ChangeValue(self.GetItemText(e.Index, 4))
+        get_main_frame().medicine_quantity.ChangeValue(
+            int(self.GetItemText(e.Index, 5))  # pyright: ignore[reportArgumentType]
+        )
+        get_main_frame().medicine_usage_note.ChangeValue(self.GetItemText(e.Index, 6))
+        get_main_frame().display_usage_note()
+
+    def on_medicine_list_deselect(self, _):
+        get_main_frame().medicine = None
 
     def to_model(self) -> Iterable[Medicine]:
         visit_id = get_main_frame().visit_id

@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import cast
 from math import ceil
 from fractions import Fraction
 import sqlite3
@@ -42,6 +41,7 @@ class MainFrame(wx.Frame):
         self.Maximize()
 
         self.patient_search = wx.SearchCtrl(self)
+        self.patient_search.SetHint("Ctrl + o")
         patient_book = wx.Notebook(self)
         self.queue = patient.List(patient_book)
         self.seentoday = patient.List(patient_book)
@@ -67,7 +67,7 @@ class MainFrame(wx.Frame):
         self.patient_past_history = wx.TextCtrl(
             self.patient_box, style=wx.TE_MULTILINE, size=wx.Size(-1, 75)
         )
-        self.patient_new_btn = wx.Button(self.patient_box, label="BN Mới")
+        self.patient_new_btn = wx.Button(self.patient_box, label="BN Mới (CTRL + N)")
         self.patient_upd_btn = wx.Button(self.patient_box, label="Cập nhật")
         self.patient_ok_btn = wx.Button(self.patient_box, label="OK")
         self.patient_cancel_btn = wx.Button(self.patient_box, label="Cancel")
@@ -131,7 +131,7 @@ class MainFrame(wx.Frame):
         self.visit_new_btn = wx.Button(self, label="Lượt khám mới")
         self.visit_same_btn = wx.Button(self, label="Lượt khám mới (toa cũ)")
         self.visit_upd_btn = wx.Button(self, label="Cập nhật")
-        self.visit_ok_btn = wx.Button(self, label="OK")
+        self.visit_ok_btn = wx.Button(self, label="OK (CTRL+S)")
         self.visit_cancel_btn = wx.Button(self, label="Cancel")
 
         def static(parent, label: str, w=-1):
@@ -264,11 +264,7 @@ class MainFrame(wx.Frame):
         self._medicine: sqlite3.Row | None
         self._service: sqlite3.Row | None
 
-        self.patient_search.Bind(wx.EVT_SEARCH, self.on_patient_search)
-        patient_book.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_patient_select)
-        patient_book.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
-        self.visit_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
-        self.visit_list.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
+        # navigation
         self.patient_gender.Bind(
             wx.EVT_KEY_DOWN,
             lambda e: (
@@ -285,51 +281,78 @@ class MainFrame(wx.Frame):
                 else e.Skip()
             ),
         )
+
+        # others
+        self.patient_search.Bind(wx.EVT_SEARCH, self.on_patient_search)
         self.patient_birthdate.Bind(wx.adv.EVT_DATE_CHANGED, self.on_date_changed)
-        self.patient_new_btn.Bind(wx.EVT_BUTTON, self.on_patient_new_btn)
-        self.patient_upd_btn.Bind(wx.EVT_BUTTON, self.on_patient_upd_btn)
-        self.patient_ok_btn.Bind(wx.EVT_BUTTON, self.on_patient_ok_btn)
-        self.patient_cancel_btn.Bind(wx.EVT_BUTTON, self.on_patient_cancel_btn)
+
+        # display_usage_note
         self.medicine_times.Bind(wx.EVT_TEXT, lambda _: self.display_usage_note())
         self.medicine_dose.Bind(wx.EVT_TEXT, lambda _: self.display_usage_note())
         self.medicine_usage_note.Bind(wx.EVT_TEXT, lambda _: self.display_usage_note())
+
+        # calculate_medicine_quatity
         self.medicine_times.Bind(
             wx.EVT_TEXT, lambda _: self.calculate_medicine_quatity()
         )
         self.medicine_dose.Bind(
             wx.EVT_TEXT, lambda _: self.calculate_medicine_quatity()
         )
+
+        # list buttons
         self.medicine_add_btn.Bind(wx.EVT_BUTTON, self.on_medicine_add_btn)
         self.medicine_del_btn.Bind(wx.EVT_BUTTON, self.on_medicine_del_btn)
-        self.medicine_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_medicine_list_select)
-        self.medicine_list.Bind(
-            wx.EVT_LIST_ITEM_DESELECTED, self.on_medicine_list_deselect
-        )
         self.service_add_btn.Bind(wx.EVT_BUTTON, self.on_service_add_btn)
         self.service_del_btn.Bind(wx.EVT_BUTTON, self.on_service_del_btn)
-        self.service_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_service_list_select)
-        self.service_list.Bind(
-            wx.EVT_LIST_ITEM_DESELECTED, self.on_service_list_deselect
-        )
+
+        # buttons
+        self.patient_new_btn.Bind(wx.EVT_BUTTON, self.on_patient_new_btn)
+        self.patient_upd_btn.Bind(wx.EVT_BUTTON, self.on_patient_upd_btn)
+        self.patient_ok_btn.Bind(wx.EVT_BUTTON, self.on_patient_ok_btn)
+        self.patient_cancel_btn.Bind(wx.EVT_BUTTON, self.on_patient_cancel_btn)
         self.visit_new_btn.Bind(wx.EVT_BUTTON, self.on_visit_new_btn)
         self.visit_same_btn.Bind(wx.EVT_BUTTON, self.on_visit_same_btn)
         self.visit_upd_btn.Bind(wx.EVT_BUTTON, self.on_visit_upd_btn)
         self.visit_ok_btn.Bind(wx.EVT_BUTTON, self.on_visit_ok_btn)
         self.visit_cancel_btn.Bind(wx.EVT_BUTTON, self.on_visit_cancel_btn)
 
+        # beginning state
         self.patient_edit_mode(False)
         self.visit_edit_mode(False)
         self.medicine_edit_mode(False)
         self.service_edit_mode(False)
-
         self.visit_days.ChangeValue(
             get_app().config["process"]["default_days_for_prescription"]
         )
         self.visit_price.SetInt(get_app().config["process"]["price"])
         self.patient_search.SetFocus()
-
         self.populate_seentoday()
         self.populate_follow_up()
+
+        self.SetAcceleratorTable(
+            wx.AcceleratorTable(
+                [
+                    wx.AcceleratorEntry(
+                        wx.ACCEL_CTRL, ord("o"), accel_focus_search := wx.NewId()
+                    ),
+                    wx.AcceleratorEntry(
+                        wx.ACCEL_CTRL, ord("n"), accel_new_patient := wx.NewId()
+                    ),
+                    wx.AcceleratorEntry(
+                        wx.ACCEL_CTRL, ord("s"), accel_save_visit := wx.NewId()
+                    ),
+                ]
+            )
+        )
+        self.Bind(
+            wx.EVT_MENU, lambda _: self.patient_search.SetFocus(), id=accel_focus_search
+        )
+        self.Bind(wx.EVT_MENU, self.on_patient_new_btn, id=accel_new_patient)
+        self.Bind(
+            wx.EVT_MENU,
+            lambda e: self.on_visit_ok_btn(e) if self.visit_ok_btn.IsShown() else ...,
+            id=accel_save_visit,
+        )
 
     @property
     def patient_id(self) -> int | None:
@@ -528,20 +551,17 @@ class MainFrame(wx.Frame):
         self.service_del_btn.Enable(b)
 
     def refresh(self):
-        self.queue.DeleteAllItems()
-        self.seentoday.DeleteAllItems()
-        self.follow_up.DeleteAllItems()
-        self.visit_list.DeleteAllItems()
         self.patient_id = None
         self.visit_id = None
         self.medicine = None
         self.service = None
-        get_app().fetch_stable_data()
         self.populate_queue(self.patient_search.Value.strip())
         self.populate_seentoday()
         self.populate_follow_up()
+        self.populate_visit_list()
 
     def populate_queue(self, value: str = ""):
+        self.queue.DeleteAllItems()
         for item in get_app().conn.execute(
             """
             SELECT id, name, gender, birthdate from patients
@@ -552,63 +572,33 @@ class MainFrame(wx.Frame):
             self.queue.append(item)
 
     def populate_seentoday(self):
+        self.seentoday.DeleteAllItems()
         for item in get_app().conn.execute("SELECT * FROM seentoday"):
             self.seentoday.append(item)
 
     def populate_follow_up(self):
+        self.follow_up.DeleteAllItems()
         for item in get_app().conn.execute("SELECT * FROM follow_up"):
             self.follow_up.append(item)
 
+    def populate_visit_list(self):
+        self.visit_list.DeleteAllItems()
+        if self.patient_id is not None:
+            for item in (
+                get_app()
+                .conn.execute(
+                    """
+                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
+                        ORDER BY id DESC
+                        """,
+                    (self.patient_id,),
+                )
+                .fetchall()
+            ):
+                self.visit_list.append(item)
+
     def on_patient_search(self, e: wx.CommandEvent):
         self.populate_queue(e.String.strip().upper())
-
-    def on_patient_select(self, e: wx.ListEvent):
-        self.patient_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
-
-    def on_patient_deselect(self, _: wx.ListEvent):
-        self.patient_id = None
-
-    def on_visit_select(self, e: wx.ListEvent):
-        self.visit_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 0))
-
-    def on_visit_deselect(self, _: wx.ListEvent):
-        self.visit_id = None
-
-    def on_medicine_list_select(self, e: wx.ListEvent):
-        medicine_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 1))
-        for i, m in enumerate(get_app().medicine_store):
-            if m["id"] == medicine_id:
-                self.medicine = get_app().medicine_store[i]
-                break
-        self.medicine_times.ChangeValue(
-            int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 3))  # pyright: ignore[reportArgumentType]
-        )
-        self.medicine_dose.ChangeValue(
-            cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 4)
-        )
-        self.medicine_quantity.ChangeValue(
-            int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 5))  # pyright: ignore[reportArgumentType]
-        )
-        self.medicine_usage_note.ChangeValue(
-            cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 6)
-        )
-        self.display_usage_note()
-
-    def on_medicine_list_deselect(self, _):
-        self.medicine = None
-
-    def on_service_list_select(self, e: wx.ListEvent):
-        service_id = int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 1))
-        for i, m in enumerate(get_app().service_store):
-            if m["id"] == service_id:
-                self.service = get_app().service_store[i]
-                break
-        self.service_quantity.ChangeValue(
-            int(cast(wx.ListCtrl, e.EventObject).GetItemText(e.Index, 3))  # pyright: ignore[reportArgumentType]
-        )
-
-    def on_service_list_deselect(self, _):
-        self.service = None
 
     def on_medicine_add_btn(self, _):
         assert self.medicine is not None
@@ -736,14 +726,10 @@ class MainFrame(wx.Frame):
                 if id is None:
                     id = insert(get_app().conn, visit)
                     self._visit_id = id
-                    [
+                    for item in self.medicine_list.to_model():
                         insert(get_app().conn, item)
-                        for item in self.medicine_list.to_model()
-                    ]
-                    [
+                    for item in self.service_list.to_model():
                         insert(get_app().conn, item)
-                        for item in self.service_list.to_model()
-                    ]
                 else:
                     update(get_app().conn, visit, id)
                     get_app().conn.execute(
@@ -752,30 +738,14 @@ class MainFrame(wx.Frame):
                     get_app().conn.execute(
                         "DELETE FROM services WHERE visit_id = ?", (id,)
                     )
-                    [
+                    for item in self.medicine_list.to_model():
                         insert(get_app().conn, item)
-                        for item in self.medicine_list.to_model()
-                    ]
-                    [
+                    for item in self.service_list.to_model():
                         insert(get_app().conn, item)
-                        for item in self.service_list.to_model()
-                    ]
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
             finally:
-                self.visit_list.DeleteAllItems()
-                for item in (
-                    get_app()
-                    .conn.execute(
-                        """
-                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
-                        ORDER BY id DESC
-                        """,
-                        (self.patient_id,),
-                    )
-                    .fetchall()
-                ):
-                    self.visit_list.append(item)
+                self.populate_visit_list()
                 self.visit_edit_mode(False)
 
     def on_visit_cancel_btn(self, _):

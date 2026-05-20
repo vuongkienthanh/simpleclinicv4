@@ -14,6 +14,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Dịch vụ", width=200)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Giá", width=-1)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_service_list_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_service_list_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -25,6 +27,17 @@ class List(wx.ListCtrl):
                 str(item["price"] * item["quantity"]),
             ]
         )
+
+    def on_service_list_select(self, e: wx.ListEvent):
+        service_id = int(self.GetItemText(e.Index, 1))
+        for i, m in enumerate(get_app().service_store):
+            if m["id"] == service_id:
+                get_main_frame().service = get_app().service_store[i]
+                break
+        get_main_frame().service_quantity.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
+
+    def on_service_list_deselect(self, _):
+        get_main_frame().service = None
 
     def to_model(self) -> Iterable[Service]:
         visit_id = get_main_frame().visit_id
