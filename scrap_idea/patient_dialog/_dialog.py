@@ -3,7 +3,7 @@ import wx.adv
 from lib.wx_helper import EA, row, column
 from lib.wx_helper.widget import GenderChoiceCtrl
 from lib.enums import Gender
-from lib.vn import bd_to_vn_age
+from lib.vn import bd_to_age
 from lib.models import Patient
 
 
@@ -38,7 +38,7 @@ class Dialog(wx.Dialog):
         self.name.ChangeValue(name)
         self.gender.SetGender(gender)
         self.birthdate.SetValue(birthdate)
-        self.age.SetLabel(bd_to_vn_age(birthdate))
+        self.age.SetLabel(bd_to_age(birthdate))
         self.past_history.ChangeValue(past_history)
 
         def widget(w: wx.Window):
@@ -74,7 +74,7 @@ class Dialog(wx.Dialog):
 
     def on_birthdate(self, e: wx.adv.CalendarEvent):
         date = e.GetDate()
-        self.age.SetLabel(bd_to_vn_age(date))
+        self.age.SetLabel(bd_to_age(date))
 
     def on_ok(self, _): ...
 

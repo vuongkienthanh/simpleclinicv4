@@ -25,13 +25,16 @@ def row(*children) -> wx.BoxSizer:
     return sizer
 
 
-SPECIALS = [
-    wx.WXK_BACK,
-    wx.WXK_DELETE,
+DIRECTIONS = [
     wx.WXK_HOME,
     wx.WXK_END,
     wx.WXK_LEFT,
     wx.WXK_RIGHT,
+]
+
+SPECIALS = [
+    wx.WXK_BACK,
+    wx.WXK_DELETE,
     wx.WXK_TAB,
     wx.WXK_RETURN,
     1,  # ctrl-a

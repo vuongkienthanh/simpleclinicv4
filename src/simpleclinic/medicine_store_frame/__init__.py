@@ -7,10 +7,10 @@ from simpleclinic.medicine_dialog import AddDialog, UpdateDialog
 from ._widget import List
 
 
-class MedicineStoreFrame(wx.Frame):
+class StoreFrame(wx.Frame):
     def __init__(self):
-
         super().__init__(parent=None, title="Kho thuốc")
+        self.Maximize()
         self.searchctrl = wx.SearchCtrl(self)
         self.searchctrl.SetHint("Tên thuốc hoặc thành phần thuốc")
         self.listctrl = List(self)

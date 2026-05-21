@@ -23,13 +23,14 @@ from lib.wx_helper.widget import (
 from lib.models import Patient, Visit
 from lib.enums import Gender
 from lib.db import insert, update
-from lib.vn import bd_to_vn_age
+from lib.vn import bd_to_age
 from ._widget import (
     patient,
     visit,
     medicine,
     service,
 )
+from ._menubar import MenuBar
 
 
 class MainFrame(wx.Frame):
@@ -39,6 +40,7 @@ class MainFrame(wx.Frame):
         )
         self.SetFont(wx.Font(wx.FontInfo(get_app().config["theme"]["font_size"])))
         self.SetBackgroundColour(wx.Colour(get_app().config["theme"]["main_frame"]))
+        self.SetMenuBar(MenuBar())
         self.Maximize()
 
         self.patient_search = wx.SearchCtrl(self)
@@ -64,7 +66,7 @@ class MainFrame(wx.Frame):
             self.patient_box, size=wx.Size(120, -1), style=wx.TE_READONLY
         )
         self.patient_age.Disable()
-        self.patient_age.ChangeValue(bd_to_vn_age(wx.DateTime.Today()))
+        self.patient_age.ChangeValue(bd_to_age(wx.DateTime.Today()))
         self.patient_past_history = wx.TextCtrl(
             self.patient_box, style=wx.TE_MULTILINE, size=wx.Size(-1, 75)
         )
@@ -335,24 +337,12 @@ class MainFrame(wx.Frame):
                 [
                     wx.AcceleratorEntry(
                         wx.ACCEL_CTRL, ord("o"), accel_focus_search := wx.NewId()
-                    ),
-                    wx.AcceleratorEntry(
-                        wx.ACCEL_CTRL, ord("n"), accel_new_patient := wx.NewId()
-                    ),
-                    wx.AcceleratorEntry(
-                        wx.ACCEL_CTRL, ord("s"), accel_save_visit := wx.NewId()
-                    ),
+                    )
                 ]
             )
         )
         self.Bind(
             wx.EVT_MENU, lambda _: self.patient_search.SetFocus(), id=accel_focus_search
-        )
-        self.Bind(wx.EVT_MENU, self.on_patient_new_btn, id=accel_new_patient)
-        self.Bind(
-            wx.EVT_MENU,
-            lambda e: self.on_visit_ok_btn(e) if self.visit_ok_btn.IsShown() else ...,
-            id=accel_save_visit,
         )
 
     @property
@@ -759,7 +749,7 @@ class MainFrame(wx.Frame):
             self.visit_edit_mode(False)
 
     def on_date_changed(self, e: wx.adv.DateEvent):
-        self.patient_age.ChangeValue(bd_to_vn_age(e.GetDate()))
+        self.patient_age.ChangeValue(bd_to_age(e.GetDate()))
 
     def display_usage_note(self):
         assert self.medicine is not None

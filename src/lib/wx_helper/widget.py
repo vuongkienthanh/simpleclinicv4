@@ -3,6 +3,7 @@ from itertools import chain
 from lib.enums import Gender
 from . import (
     NUMBERS,
+    DIRECTIONS,
     NUMPADS,
     SPECIALS,
     SLASH,
@@ -35,7 +36,7 @@ class DoseCtrl(wx.TextCtrl):
     def on_char(self, e: wx.KeyEvent):
         s = self.Value
         if "/" not in s and "." not in s:
-            keys = chain(INT_KEYS, SLASH, DECIMAL)
+            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS, SLASH, DECIMAL)
         else:
             keys = INT_KEYS
 
@@ -44,16 +45,16 @@ class DoseCtrl(wx.TextCtrl):
 
 
 class DecimalIntCtrl(wx.TextCtrl):
-    def __init__(self, parent: wx.Window):
-        super().__init__(parent)
+    def __init__(self, parent: wx.Window, name=""):
+        super().__init__(parent, name=name)
         self.Bind(wx.EVT_CHAR, self.on_char)
 
     def on_char(self, e: wx.KeyEvent):
         s = self.Value
         if "." in s:
-            keys = INT_KEYS
+            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS)
         else:
-            keys = chain(INT_KEYS, DECIMAL)
+            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS, DECIMAL)
 
         if e.KeyCode in keys:
             e.Skip()
@@ -66,14 +67,14 @@ class DecimalIntCtrl(wx.TextCtrl):
 
 
 class ThousandGroupIntCtrl(wx.TextCtrl):
-    def __init__(self, parent: wx.Window):
-        super().__init__(parent)
+    def __init__(self, parent: wx.Window, name=""):
+        super().__init__(parent, name=name)
         self.Bind(wx.EVT_CHAR, self.on_char)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
         self.Bind(wx.EVT_TEXT, self.on_text)
 
     def on_char(self, e: wx.KeyEvent):
-        if e.KeyCode in INT_KEYS:
+        if e.KeyCode in chain(NUMBERS, NUMPADS, SPECIALS):
             e.Skip()
 
     def on_left_down(self, _):

@@ -1,7 +1,7 @@
 import wx
 
 
-def bd_to_vn_age(bd: wx.DateTime) -> str:
+def bd_to_age(bd: wx.DateTime) -> str:
     if not bd.IsValid():
         return "Invalid Date"
 
@@ -16,10 +16,10 @@ def bd_to_vn_age(bd: wx.DateTime) -> str:
     # Tier 2: 2 Months to < 2 Years (Total Months)
     total_months = delta.GetTotalMonths()
     if total_months >= 2:
-        return f"{total_months} tháng"
+        return f"{total_months} tháng tuổi"
 
     # Tier 3: Under 2 Months (Total Days)
-    return f"{delta.GetTotalDays()} ngày"
+    return f"{delta.GetTotalDays()} ngày tuổi"
 
 
 VIETNAMESE_WEEKDAYS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]

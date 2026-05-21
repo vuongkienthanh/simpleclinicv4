@@ -7,10 +7,10 @@ from lib.db import delete
 from lib.models import ServiceStore
 
 
-class ServiceStoreFrame(wx.Frame):
+class StoreFrame(wx.Frame):
     def __init__(self):
-
         super().__init__(parent=None, title="Dịch vụ")
+        self.Maximize()
         self.searchctrl = wx.SearchCtrl(self)
         self.listctrl = List(self)
         self.add_btn = wx.Button(self, label="Thêm mới")
@@ -18,7 +18,7 @@ class ServiceStoreFrame(wx.Frame):
         self.del_btn = wx.Button(self, label="Xoá")
 
         search_sizer = row(
-            (wx.StaticText(self, label="Tìm kiếm"), 0, EA | wx.ALIGN_CENTER, 5),
+            (wx.StaticText(self, label="Tìm kiếm"), 0, wx.ALL | wx.ALIGN_CENTER, 5),
             (self.searchctrl, 1, EA, 5),
         )
         btn_sizer = row(

@@ -2,6 +2,7 @@ import wx
 from wx.lib.intctrl import IntCtrl
 from lib.wx_helper import EA, row, column
 from lib.models import MedicineStore
+from lib.wx_helper.widget import ThousandGroupIntCtrl
 
 
 class Dialog(wx.Dialog):
@@ -12,12 +13,12 @@ class Dialog(wx.Dialog):
         id: int | None = None,
         name="",
         element="",
-        quantity="",
+        quantity=0,
         route="",
         usage_unit="",
         selling_unit="",
-        cost_price="",
-        selling_price="",
+        cost_price=0,
+        selling_price=0,
     ):
         super().__init__(
             parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
@@ -31,8 +32,8 @@ class Dialog(wx.Dialog):
         self.route = wx.TextCtrl(self, name="Đường dùng")
         self.usage_unit = wx.TextCtrl(self, name="Đơn vị dùng")
         self.selling_unit = wx.TextCtrl(self, name="Đơn vị bán")
-        self.cost_price = IntCtrl(self, name="Giá mua", min=0, limited=True)
-        self.selling_price = IntCtrl(self, name="Giá bán", min=0, limited=True)
+        self.cost_price = ThousandGroupIntCtrl(self, name="Giá mua")
+        self.selling_price = ThousandGroupIntCtrl(self, name="Giá bán")
         self.ok_btn = wx.Button(self, label="Ok")
         self.cancel_btn = wx.Button(self, label="Cancel")
 
@@ -71,12 +72,12 @@ class Dialog(wx.Dialog):
         self.id = id
         self.name.ChangeValue(name)
         self.element.ChangeValue(element)
-        self.quantity.ChangeValue(quantity)
+        self.quantity.ChangeValue(quantity)  # pyright: ignore[reportArgumentType]
         self.route.ChangeValue(route)
         self.usage_unit.ChangeValue(usage_unit)
         self.selling_unit.ChangeValue(selling_unit)
-        self.cost_price.ChangeValue(cost_price)
-        self.selling_price.ChangeValue(selling_price)
+        self.cost_price.SetInt(cost_price)
+        self.selling_price.SetInt(selling_price)
 
         self.ok_btn.Bind(wx.EVT_BUTTON, self.on_ok)
         self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel)
@@ -93,6 +94,6 @@ class Dialog(wx.Dialog):
             route=self.route.Value.strip(),
             usage_unit=self.usage_unit.Value.strip(),
             selling_unit=self.selling_unit.Value.strip(),
-            cost_price=int(self.cost_price.Value),
-            selling_price=int(self.selling_price.Value),
+            cost_price=self.cost_price.GetInt(),
+            selling_price=self.selling_price.GetInt(),
         )

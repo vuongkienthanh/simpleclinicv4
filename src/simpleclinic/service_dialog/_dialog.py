@@ -1,18 +1,18 @@
 import wx
-from wx.lib.intctrl import IntCtrl
 from lib.wx_helper import EA, row, column
 from lib.models import ServiceStore
+from lib.wx_helper.widget import ThousandGroupIntCtrl
 
 
 class Dialog(wx.Dialog):
     def __init__(
-        self, parent: wx.Window, title: str, id: int | None = None, name="", price=""
+        self, parent: wx.Window, title: str, id: int | None = None, name="", price=0
     ):
         super().__init__(
             parent, title=title, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
         )
         self.name = wx.TextCtrl(self, name="Dịch vụ")
-        self.price = IntCtrl(self, name="Giá", min=0, limited=True)
+        self.price = ThousandGroupIntCtrl(self, name="Giá")
         self.ok_btn = wx.Button(self, label="Ok")
         self.cancel_btn = wx.Button(self, label="Cancel")
 
@@ -44,7 +44,7 @@ class Dialog(wx.Dialog):
 
         self.id = id
         self.name.ChangeValue(name)
-        self.price.ChangeValue(price)
+        self.price.SetInt(price)
 
         self.ok_btn.Bind(wx.EVT_BUTTON, self.on_ok)
         self.cancel_btn.Bind(wx.EVT_BUTTON, self.on_cancel)
@@ -56,5 +56,5 @@ class Dialog(wx.Dialog):
     def get_item(self):
         return ServiceStore(
             name=self.name.Value.strip(),
-            price=int(self.price.Value),
+            price=self.price.GetInt(),
         )

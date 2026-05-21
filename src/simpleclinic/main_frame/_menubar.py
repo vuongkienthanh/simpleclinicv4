@@ -1,110 +1,64 @@
 import datetime as dt
-import os
-import os.path
-import shutil
-import sqlite3
-from typing import cast
+import textwrap
 
 import wx
 import wx.adv
+from lib import DATE_FORMAT
 from lib.wx_helper import get_app, get_main_frame
+from lib.paths import APP_DIR
+from lib.vn import bd_to_age
 
 
-class MyMenuBar(wx.MenuBar):
+class MenuBar(wx.MenuBar):
     def __init__(self):
         super().__init__()
 
-        homeMenu = wx.Menu()
-        homeMenu.Append(wx.ID_REFRESH, "&Refresh\tF5")
-        homeMenu.Append(wx.ID_ABOUT)
-        homeMenu.Append(wx.ID_EXIT, "&Exit\tCTRL+Q")
+        home = wx.Menu()
+        home.Append(wx.ID_REFRESH, "&Refresh\tF5")
+        home.Append(wx.ID_ABOUT)
+        home.Append(wx.ID_EXIT, "&Exit\tCTRL+Q")
         self.Bind(wx.EVT_MENU, lambda _: get_app().refresh(), id=wx.ID_REFRESH)
         self.Bind(wx.EVT_MENU, self.onAbout, id=wx.ID_ABOUT)
         self.Bind(wx.EVT_MENU, lambda _: get_main_frame().Close(), id=wx.ID_EXIT)
 
-        editMenu = wx.Menu()
-
-        menuPatient = wx.Menu()
-        menuPatient.Append(wx.ID_NEW, "Bệnh nhân mới\tCTRL+N")
-        self.menuUpdatePatient: wx.MenuItem = menuPatient.Append(
-            wx.ID_EDIT, "Cập nhật thông tin bệnh nhân\tCTRL+U"
+        edit = wx.Menu()
+        self.new_patient = edit.Append(wx.ID_ANY, "Bệnh nhân mới\tCTRL+N")
+        self.new_visit = edit.Append(wx.ID_ANY, "Lượt khám mới\tCTRL+M")
+        self.Bind(
+            wx.EVT_MENU, get_main_frame().on_patient_new_btn, source=self.new_patient
         )
-        menuPatient.Append(wx.ID_OPEN, "Tìm bệnh nhân cũ\tCTRL+O")
-        editMenu.AppendSubMenu(menuPatient, "Bệnh nhân")
+        self.Bind(wx.EVT_MENU, get_main_frame().on_visit_new_btn, source=self.new_visit)
 
-        menuVisit = wx.Menu()
-        self.menuNewVisit: wx.MenuItem = menuVisit.Append(wx.ID_ANY, "Lượt khám mới")
-        self.menuInsertVisit: wx.MenuItem = menuVisit.Append(
-            wx.ID_ANY, "Lưu lượt khám\tCTRL+S"
-        )
-        self.menuUpdateVisit: wx.MenuItem = menuVisit.Append(
-            wx.ID_ANY, "Cập nhật lượt khám\tCTRL+Shift+S"
-        )
-        self.menuDeleteVisit: wx.MenuItem = menuVisit.Append(
-            wx.ID_ANY, "Xóa lượt khám cũ"
-        )
-        editMenu.AppendSubMenu(menuVisit, "Lượt khám")
+        edit.AppendSeparator()
 
-        menuQueue = wx.Menu()
-        self.menuDeleteQueue: wx.MenuItem = menuQueue.Append(
-            wx.ID_ANY, "Xóa lượt chờ khám"
-        )
-        editMenu.AppendSubMenu(menuQueue, "Danh sách chờ")
+        edit.Append(wx.ID_PRINT, "In\tCTRL+P")
+        edit.Append(wx.ID_INFO, "Copy thông tin lượt khám\tCTRL+SHIFT+C")
+        self.Bind(wx.EVT_MENU, self.on_print, id=wx.ID_PRINT)
+        self.Bind(wx.EVT_MENU, self.on_copy_info, id=wx.ID_INFO)
 
-        menuPrinter = wx.Menu()
-        self.menuPrint: wx.MenuItem = menuPrinter.Append(wx.ID_PRINT, "In\tCTRL+P")
-        self.menuPreview: wx.MenuItem = menuPrinter.Append(
-            wx.ID_PREVIEW, "Xem trước bản in\tCTRL+SHIFT+P"
-        )
-        editMenu.AppendSubMenu(menuPrinter, "Máy in")
+        stores = wx.Menu()
+        medicine_store = stores.Append(wx.ID_ANY, "Kho thuốc")
+        service_store = stores.Append(wx.ID_ANY, "Thủ thuật")
+        self.Bind(wx.EVT_MENU, self.on_medicine_store, medicine_store)
+        self.Bind(wx.EVT_MENU, self.on_service_store, service_store)
 
-        self.menuCopyVisitInfo: wx.MenuItem = editMenu.Append(
-            wx.ID_INFO, "Copy thông tin lượt khám vào Clipboard\tCTRL+SHIFT+C"
-        )
+        # menuReport = wx.Menu()
+        # menuDayReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo ngày")
+        # menuMonthReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo tháng")
+        # menuMonthWarehouseReport = menuReport.Append(
+        #     wx.ID_ANY, "Tình hình dùng thuốc theo tháng"
+        # )
+        # manageMenu.AppendSubMenu(menuReport, "Báo cáo")
 
-        manageMenu = wx.Menu()
+        setting = wx.Menu()
 
-        menuWarehouse: wx.MenuItem = manageMenu.Append(wx.ID_ANY, "Kho thuốc")
-        menuSample: wx.MenuItem = manageMenu.Append(wx.ID_ANY, "Toa mẫu")
-        menuProcedure: wx.MenuItem = manageMenu.Append(wx.ID_ANY, "Thủ thuật")
+        open_config_folder = setting.Append(wx.ID_ANY, "Mở folder cài đặt + dữ liệu")
+        self.Bind(wx.EVT_MENU, self.on_open_config_folder, open_config_folder)
 
-        menuReport = wx.Menu()
-        menuDayReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo ngày")
-        menuMonthReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo tháng")
-        menuMonthWarehouseReport = menuReport.Append(
-            wx.ID_ANY, "Tình hình dùng thuốc theo tháng"
-        )
-        manageMenu.AppendSubMenu(menuReport, "Báo cáo")
-
-        settingMenu = wx.Menu()
-
-        menuOpenConfigFolder: wx.MenuItem = settingMenu.Append(
-            wx.ID_ANY, "Mở folder cài đặt + dữ liệu"
-        )
-
-        self.Append(homeMenu, "&Home")
-        self.Append(editMenu, "&Khám bệnh")
-        self.Append(manageMenu, "&Quản lý")
-        self.Append(settingMenu, "&Hệ thống")
-
-        self.Bind(wx.EVT_MENU, self.onNewPatient, id=wx.ID_NEW)
-        self.Bind(wx.EVT_MENU, self.onFindPatient, id=wx.ID_OPEN)
-        self.Bind(wx.EVT_MENU, self.onEditPatient, id=wx.ID_EDIT)
-        self.Bind(wx.EVT_MENU, self.onNewVisit, self.menuNewVisit)
-        self.Bind(wx.EVT_MENU, self.onInsertVisit, self.menuInsertVisit)
-        self.Bind(wx.EVT_MENU, self.onUpdateVisit, self.menuUpdateVisit)
-        self.Bind(wx.EVT_MENU, self.onDeleteVisit, self.menuDeleteVisit)
-        self.Bind(wx.EVT_MENU, self.onDeleteQueueList, self.menuDeleteQueue)
-        self.Bind(wx.EVT_MENU, self.onPrint, id=wx.ID_PRINT)
-        self.Bind(wx.EVT_MENU, self.onPreview, id=wx.ID_PREVIEW)
-        self.Bind(wx.EVT_MENU, self.onCopyVisitInfo, id=wx.ID_INFO)
-        self.Bind(wx.EVT_MENU, self.onWarehouse, menuWarehouse)
-        self.Bind(wx.EVT_MENU, self.onSample, menuSample)
-        self.Bind(wx.EVT_MENU, self.onProcedure, menuProcedure)
-        self.Bind(wx.EVT_MENU, self.onDayReport, menuDayReport)
-        self.Bind(wx.EVT_MENU, self.onMonthReport, menuMonthReport)
-        self.Bind(wx.EVT_MENU, self.onMonthWarehouseReport, menuMonthWarehouseReport)
-        self.Bind(wx.EVT_MENU, self.onOpenConfigFolder, menuOpenConfigFolder)
+        self.Append(home, "&Home")
+        self.Append(edit, "&Khám bệnh")
+        self.Append(stores, "&Quản lý")
+        self.Append(setting, "&Hệ thống")
 
     def onAbout(self, _):
         info = wx.adv.AboutDialogInfo()
@@ -114,211 +68,68 @@ class MyMenuBar(wx.MenuBar):
         info.SetCopyright(get_app().VendorDisplayName)
         wx.adv.AboutBox(info)
 
-    def onNewPatient(self, _):
-        from app.dialogs import NewPatientDialog
+    def on_print(self, _): ...
 
-        mv = cast("mainview.MainView", self.GetFrame())
-        NewPatientDialog(mv).ShowModal()
-
-    def onFindPatient(self, _):
-        from app.dialogs import FindPatientDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        FindPatientDialog(mv).ShowModal()
-
-    def onEditPatient(self, _):
-        from app.dialogs import EditPatientDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        page: wx.ListCtrl = mv.patient_book.GetPage(mv.patient_book.Selection)
-        idx: int = page.GetFirstSelected()
-        assert idx >= 0
-        assert mv.state.patient is not None
-        if EditPatientDialog(mv).ShowModal() == wx.ID_OK:
-            page.EnsureVisible(idx)
-
-    def onNewVisit(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        idx = mv.visit_list.GetFirstSelected()
-        mv.visit_list.Select(idx, 0)
-
-    def onInsertVisit(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        mv.savebtn.insert_visit()
-
-    def onUpdateVisit(self, _):
-        mv = cast("mainview.MainView", self.GetFrame())
-        mv.savebtn.update_visit()
-
-    def onDeleteVisit(self, _):
-        if (
-            wx.MessageBox(
-                "Xác nhận?",
-                "Xóa lượt khám",
-                style=wx.YES_NO | wx.NO_DEFAULT | wx.CENTRE,
+    def on_copy_info(self, _):
+        print("on copy info")
+        if wx.TheClipboard.Open():
+            t = """
+            {}
+            {} ({} {} {})
+            Chẩn đoán: {}
+            Thuốc {} ngày:
+            {}
+            Thủ thuật:
+            {}
+            Dặn dò: {}
+            Tiền khám: {}
+            """.format(
+                dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
+                f"{get_main_frame().patient_name.Value}",
+                f"{get_main_frame().patient_gender.GetGender().display_name}",
+                f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
+                f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
+                get_main_frame().visit_diagnosis.Value,
+                get_main_frame().visit_days.Value,
+                "\n".join(
+                    [
+                        "{}/ {} {} x {} = {} ({})".format(
+                            i + 1,
+                            get_main_frame().medicine_list.GetItemText(i, 2),
+                            get_main_frame().medicine_list.GetItemText(i, 3),
+                            get_main_frame().medicine_list.GetItemText(i, 4),
+                            get_main_frame().medicine_list.GetItemText(i, 5),
+                            get_main_frame().medicine_list.GetItemText(i, 6),
+                        )
+                        for i in range(get_main_frame().medicine_list.ItemCount)
+                    ]
+                ),
+                "\n".join(
+                    [
+                        "{}/ {} x {}".format(
+                            i + 1,
+                            get_main_frame().service_list.GetItemText(i, 2),
+                            get_main_frame().service_list.GetItemText(i, 3),
+                        )
+                        for i in range(get_main_frame().service_list.ItemCount)
+                    ]
+                ),
+                get_main_frame().visit_note.Value,
+                get_main_frame().visit_price.Value,
             )
-            == wx.YES
-        ):
-            mv = cast("mainview.MainView", self.GetFrame())
-            v = mv.state.visit
-            assert v is not None
-            try:
-                mv.connection.delete(Visit, v.id)
-                wx.MessageBox(
-                    "Xóa thành công", "OK", style=wx.OK_DEFAULT | wx.ICON_NONE
-                )
-                mv.state.refresh()
-            except sqlite3.Error as error:
-                wx.MessageBox("Lỗi không xóa được\n" + str(error), "Lỗi")
+            print(textwrap.dedent(t).strip())
+            wx.TheClipboard.SetData(wx.TextDataObject(textwrap.dedent(t).strip()))
+            wx.TheClipboard.Close()
 
-    def onDeleteQueueList(self, _):
-        if (
-            wx.MessageBox(
-                "Xác nhận?",
-                "Xóa lượt chờ khám",
-                style=wx.YES_NO | wx.NO_DEFAULT | wx.CENTRE,
-            )
-            == wx.YES
-        ):
-            mv = cast("mainview.MainView", self.GetFrame())
-            p = mv.state.patient
-            assert p is not None
-            assert mv.patient_book.GetSelection() == 0
-            try:
-                with mv.connection as con:
-                    con.execute(
-                        f"DELETE FROM {Queue.__tablename__} WHERE patient_id = {p.id}"
-                    )
-                    wx.MessageBox(
-                        "Xóa thành công", "OK", style=wx.OK_DEFAULT | wx.ICON_NONE
-                    )
-                    mv.state.refresh()
-            except Exception as error:
-                wx.MessageBox("Lỗi không xóa được\n" + str(error), "Lỗi")
+    def on_medicine_store(self, _):
+        from simpleclinic import medicine_store_frame
 
-    def onPrint(self, _):
-        from misc.printer import PrintOut, printdata
+        medicine_store_frame.StoreFrame().Show()
 
-        mv = cast("mainview.MainView", self.GetFrame())
-        printout = PrintOut(mv)
-        printdialog = wx.PrintDialog(mv)
-        if printdialog.ShowModal() == wx.ID_OK:
-            printdialog.PrintDialogData.SetPrintData(printdata)
-            wx.Printer(printdialog.PrintDialogData).Print(mv, printout, False)
+    def on_service_store(self, _):
+        from simpleclinic import service_store_frame
 
-    def onPreview(self, _):
-        from misc.printer import PrintOut, printdata
+        service_store_frame.StoreFrame().Show()
 
-        mv = cast("mainview.MainView", self.GetFrame())
-        printout = PrintOut(mv, preview=True)
-        printdialogdata = wx.PrintDialogData(printdata)
-        printpreview = wx.PrintPreview(printout, data=printdialogdata)
-        printpreview.SetZoom(100)
-        frame = wx.PreviewFrame(printpreview, mv)
-        frame.Maximize()
-        frame.Initialize()
-        frame.Show()
-
-    def onCopyVisitInfo(self, _):
-        cb: wx.Clipboard = wx.TheClipboard  # type:ignore
-        mv = cast("mainview.MainView", self.GetFrame())
-        drug_list = mv.order_book.prescriptionpage.drug_list
-        procedure_list = mv.order_book.procedurepage.procedure_list
-
-        if cb.Open():
-            intro = "{date}\n{name} ({gender}_{bd})".format(
-                date=dt.datetime.now().strftime("%d/%m/%Y, %H:%M"),
-                name=f"Tên: {mv.name.Value}",
-                gender=f"Giới tính: {mv.gender.Value}",
-                bd=f"Ngày sinh: {mv.birthdate.Value}",
-            )
-            diagnosis = f"Chẩn đoán: {mv.diagnosis.Value}"
-            dl = "\n".join(
-                [
-                    "{}/ {} {} {}".format(
-                        i + 1,
-                        drug_list.GetItemText(i, 1),
-                        drug_list.GetItemText(i, 5),
-                        drug_list.GetItemText(i, 6),
-                    )
-                    for i in range(drug_list.ItemCount)
-                ]
-            )
-            pl = "\n".join(
-                "{}".format(procedure_list.GetItemText(i))
-                for i in range(procedure_list.ItemCount)
-            )
-            if dl != "":
-                dl = "\n".join([f"Thuốc {mv.days.Value} ngày:", dl])
-            else:
-                dl = "Không thuốc"
-            if pl != "":
-                pl = "\n".join(["Thủ thuật:", pl])
-            recheck = f"Tái khám sau {mv.recheck.Value} ngày"
-            follow = f"Dặn dò: {mv.follow.Value}"
-            price = f"Tiền khám: {mv.price.Value}"
-            t = "\n".join(
-                (
-                    intro,
-                    diagnosis,
-                    dl,
-                    pl,
-                    recheck,
-                    follow,
-                    price,
-                )
-            ).replace("\n\n", "\n")
-            cb.SetData(wx.TextDataObject(t))
-            cb.Close()
-
-    def onWarehouse(self, _):
-        from app.dialogs import WarehouseDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        WarehouseDialog(mv).ShowModal()
-
-    def onSample(self, _):
-        from app.dialogs import SampleDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        SampleDialog(mv).ShowModal()
-
-    def onProcedure(self, _):
-        from app.dialogs import ProcedureDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        ProcedureDialog(mv).ShowModal()
-
-    def onDayReport(self, _):
-        from app.dialogs import DayFinanceReportDialog
-        from app.generics import DatePickerDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        datepickerdialog = DatePickerDialog(mv)
-        if datepickerdialog.ShowModal() == wx.ID_OK:
-            DayFinanceReportDialog(mv, datepickerdialog.GetDate()).ShowModal()
-
-    def onMonthReport(self, _):
-        from app.dialogs import MonthFinanceReportDialog
-        from app.generics import MonthPickerDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        monthpickerdialog = MonthPickerDialog(mv)
-        if monthpickerdialog.ShowModal() == wx.ID_OK:
-            MonthFinanceReportDialog(
-                mv, monthpickerdialog.GetMonth(), monthpickerdialog.GetYear()
-            ).ShowModal()
-
-    def onMonthWarehouseReport(self, _):
-        from app.dialogs import MonthWarehouseReportDialog
-        from app.generics import MonthPickerDialog
-
-        mv = cast("mainview.MainView", self.GetFrame())
-        monthpickerdialog = MonthPickerDialog(mv)
-        if monthpickerdialog.ShowModal() == wx.ID_OK:
-            MonthWarehouseReportDialog(
-                mv, monthpickerdialog.GetMonth(), monthpickerdialog.GetYear()
-            ).ShowModal()
-
-    def onOpenConfigFolder(self, _):
-        wx.LaunchDefaultApplication(APP_DIR)
+    def on_open_config_folder(self, _):
+        wx.LaunchDefaultApplication(str(APP_DIR))
