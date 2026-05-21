@@ -7,12 +7,7 @@ import wx.adv
 from wx.lib.intctrl import IntCtrl
 
 from lib import DATE_FORMAT
-from lib.paths import (
-    MEDICINE_BM,
-    SERVICE_BM,
-    PLUS_BM,
-    MINUS_BM,
-)
+from lib.paths import MEDICINE_BM, SERVICE_BM, PLUS_BM, MINUS_BM, LOGO
 from lib.wx_helper import get_app, row, column, EA
 from lib.wx_helper.widget import (
     GenderChoiceCtrl,
@@ -41,6 +36,7 @@ class MainFrame(wx.Frame):
         self.SetFont(wx.Font(wx.FontInfo(get_app().config["theme"]["font_size"])))
         self.SetBackgroundColour(wx.Colour(get_app().config["theme"]["main_frame"]))
         self.SetMenuBar(MenuBar())
+        self.SetIcon(wx.Icon(str(LOGO)))
         self.Maximize()
 
         self.patient_search = wx.SearchCtrl(self)

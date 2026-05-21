@@ -5,7 +5,7 @@ import wx
 import wx.adv
 from lib import DATE_FORMAT
 from lib.wx_helper import get_app, get_main_frame
-from lib.paths import APP_DIR
+from lib.paths import APP_DIR, LOGO
 from lib.vn import bd_to_age
 
 
@@ -64,16 +64,17 @@ class MenuBar(wx.MenuBar):
         info = wx.adv.AboutDialogInfo()
         info.SetName(get_app().AppDisplayName)
         info.SetVersion(get_app().version)
-        info.SetDescription(get_app().description)
         info.SetCopyright(get_app().VendorDisplayName)
+        info.SetIcon(wx.Icon(str(LOGO)))
+        info.SetWebSite(get_app().url)
         wx.adv.AboutBox(info)
 
     def on_print(self, _): ...
 
     def on_copy_info(self, _):
-        print("on copy info")
         if wx.TheClipboard.Open():
-            t = """
+            t = textwrap.dedent(
+                """
             {}
             {} ({} {} {})
             Chẩn đoán: {}
@@ -84,41 +85,41 @@ class MenuBar(wx.MenuBar):
             Dặn dò: {}
             Tiền khám: {}
             """.format(
-                dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
-                f"{get_main_frame().patient_name.Value}",
-                f"{get_main_frame().patient_gender.GetGender().display_name}",
-                f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
-                f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
-                get_main_frame().visit_diagnosis.Value,
-                get_main_frame().visit_days.Value,
-                "\n".join(
-                    [
-                        "{}/ {} {} x {} = {} ({})".format(
-                            i + 1,
-                            get_main_frame().medicine_list.GetItemText(i, 2),
-                            get_main_frame().medicine_list.GetItemText(i, 3),
-                            get_main_frame().medicine_list.GetItemText(i, 4),
-                            get_main_frame().medicine_list.GetItemText(i, 5),
-                            get_main_frame().medicine_list.GetItemText(i, 6),
-                        )
-                        for i in range(get_main_frame().medicine_list.ItemCount)
-                    ]
-                ),
-                "\n".join(
-                    [
-                        "{}/ {} x {}".format(
-                            i + 1,
-                            get_main_frame().service_list.GetItemText(i, 2),
-                            get_main_frame().service_list.GetItemText(i, 3),
-                        )
-                        for i in range(get_main_frame().service_list.ItemCount)
-                    ]
-                ),
-                get_main_frame().visit_note.Value,
-                get_main_frame().visit_price.Value,
-            )
-            print(textwrap.dedent(t).strip())
-            wx.TheClipboard.SetData(wx.TextDataObject(textwrap.dedent(t).strip()))
+                    dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    f"{get_main_frame().patient_name.Value}",
+                    f"{get_main_frame().patient_gender.GetGender().display_name}",
+                    f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
+                    f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
+                    get_main_frame().visit_diagnosis.Value,
+                    get_main_frame().visit_days.Value,
+                    "\n".join(
+                        [
+                            "{}/ {} {} x {} = {} ({})".format(
+                                i + 1,
+                                get_main_frame().medicine_list.GetItemText(i, 2),
+                                get_main_frame().medicine_list.GetItemText(i, 3),
+                                get_main_frame().medicine_list.GetItemText(i, 4),
+                                get_main_frame().medicine_list.GetItemText(i, 5),
+                                get_main_frame().medicine_list.GetItemText(i, 6),
+                            )
+                            for i in range(get_main_frame().medicine_list.ItemCount)
+                        ]
+                    ),
+                    "\n".join(
+                        [
+                            "{}/ {} x {}".format(
+                                i + 1,
+                                get_main_frame().service_list.GetItemText(i, 2),
+                                get_main_frame().service_list.GetItemText(i, 3),
+                            )
+                            for i in range(get_main_frame().service_list.ItemCount)
+                        ]
+                    ),
+                    get_main_frame().visit_note.Value,
+                    get_main_frame().visit_price.Value,
+                )
+            ).strip()
+            wx.TheClipboard.SetData(wx.TextDataObject(t))
             wx.TheClipboard.Close()
 
     def on_medicine_store(self, _):

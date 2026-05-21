@@ -33,6 +33,7 @@ class App(wx.App):
             self.SetVendorDisplayName(data["project"]["authors"][0]["email"])
             self.version = data["project"]["version"]
             self.description = data["project"]["description"]
+            self.url = data["project"]["urls"]["repository"]
 
         self.config = get_config()
         self.conn = connect(DB_PATH)

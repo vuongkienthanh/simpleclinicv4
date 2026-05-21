@@ -26,6 +26,10 @@ MEDICINE_BM = BITMAPS / "medicine.png"
 SERVICE_BM = BITMAPS / "service.png"
 
 #######
+ICONS = ASSETS/ "icons"
+LOGO = ICONS / "logo.png"
+
+#######
 SCHEMA_SQL = ASSETS / "schema.sql"
 START_APP_SQL = ASSETS / "start_app.sql"
 CLOSE_APP_SQL = ASSETS / "close_app.sql"
