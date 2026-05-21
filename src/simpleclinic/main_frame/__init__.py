@@ -37,7 +37,6 @@ class MainFrame(wx.Frame):
         self.SetBackgroundColour(wx.Colour(get_app().config["theme"]["main_frame"]))
         self.SetMenuBar(MenuBar())
         self.SetIcon(wx.Icon(str(LOGO)))
-        self.Maximize()
 
         self.patient_search = wx.SearchCtrl(self)
         self.patient_search.SetHint("Ctrl + o")
@@ -252,8 +251,8 @@ class MainFrame(wx.Frame):
         )
         self.SetSizerAndFit(
             row(
-                (left, 2, EA, 5),
-                (right, 3, EA, 5),
+                (left, 1, EA, 5),
+                (right, 2, EA, 5),
             )
         )
 
