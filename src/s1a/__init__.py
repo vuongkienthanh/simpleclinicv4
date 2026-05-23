@@ -3,8 +3,6 @@ from lib import DATE_FORMAT
 from lib.db import connect
 from lib.paths import DB, S1A_OUTPUT, S1A_TEMPLATE
 from openpyxl import load_workbook
-from openpyxl.styles import numbers
-from copy import copy
 
 # Create the parser
 parser = argparse.ArgumentParser(
@@ -20,6 +18,9 @@ def main():
     args = parser.parse_args()
     if args.YEAR < 0:
         raise ValueError("YEAR should be positive")
+
+    if not S1A_TEMPLATE.exists():
+        raise FileNotFoundError(str(S1A_TEMPLATE))
 
     conn = connect(DB)
     result = conn.execute(
@@ -50,10 +51,8 @@ def main():
         ws[f"A{index}"] = row["exam_datetime"].Format(DATE_FORMAT)
         ws[f"B{index}"] = row["detail"]
         ws[f"C{index}"] = row["price"]
-        ws[f"A{index}"].border = copy(ws[f"C{index+2}"].border)
-        ws[f"B{index}"].border = copy(ws[f"C{index+2}"].border)
-        ws[f"C{index}"].border = copy(ws[f"C{index+2}"].border)
-        ws[f"C{index}"].number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
         index += 1
+
     wb.save(str(S1A_OUTPUT))
     wb.close()
+    conn.close()
