@@ -1,6 +1,7 @@
 import wx
 from lib.db import insert, update
-from typing import override
+from typing import override, cast
+from simpleclinic import service_store_frame
 from ._dialog import Dialog
 import sqlite3
 from lib.wx_helper import get_app
@@ -17,6 +18,7 @@ class AddDialog(Dialog):
         try:
             insert(app.conn, item)
             app.fetch_service_store()
+            cast(service_store_frame.StoreFrame, self.Parent).refresh()
             self.Close()
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Thêm mới thất bại")
@@ -34,6 +36,7 @@ class UpdateDialog(Dialog):
         try:
             update(app.conn, item, self.id)
             app.fetch_service_store()
+            cast(service_store_frame.StoreFrame, self.Parent).refresh()
             self.Close()
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Cập nhật thất bại")

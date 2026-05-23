@@ -7,7 +7,7 @@ from lib import DATE_FORMAT
 from lib.wx_helper import get_app, get_main_frame
 from lib.paths import APP_DIR, LOGO, PRESCRIPTION_OUTPUT
 from lib.vn import bd_to_age
-from ._printer import replace_prescription
+from ._printer import fill_main_frame_data
 
 
 class MenuBar(wx.MenuBar):
@@ -43,14 +43,6 @@ class MenuBar(wx.MenuBar):
         self.Bind(wx.EVT_MENU, self.on_medicine_store, medicine_store)
         self.Bind(wx.EVT_MENU, self.on_service_store, service_store)
 
-        # menuReport = wx.Menu()
-        # menuDayReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo ngày")
-        # menuMonthReport = menuReport.Append(wx.ID_ANY, "Số lượng bệnh theo tháng")
-        # menuMonthWarehouseReport = menuReport.Append(
-        #     wx.ID_ANY, "Tình hình dùng thuốc theo tháng"
-        # )
-        # manageMenu.AppendSubMenu(menuReport, "Báo cáo")
-
         setting = wx.Menu()
 
         open_config_folder = setting.Append(wx.ID_ANY, "Mở folder cài đặt + dữ liệu")
@@ -70,8 +62,8 @@ class MenuBar(wx.MenuBar):
         info.SetWebSite(get_app().url)
         wx.adv.AboutBox(info)
 
-    def on_print(self, _): 
-        replace_prescription()
+    def on_print(self, _):
+        fill_main_frame_data()
         wx.LaunchDefaultApplication(str(PRESCRIPTION_OUTPUT))
 
     def on_copy_info(self, _):

@@ -1,13 +1,19 @@
+"""
+READ fill_main_frame_data for available key:value
+"""
+
 from docx import Document, document
 import copy
+import wx
 import re
 from python_docx_replace import docx_replace
 from lib.paths import PRESCRIPTION_TEMPLATE, PRESCRIPTION_OUTPUT
+from lib.vn import wxdatetime_to_vietnamese_date
 from lib.wx_helper import get_main_frame
 from lib import DATE_FORMAT
 
 
-def duplicate(doc: document.Document, count: int):
+def _duplicate_medicine_rows(doc: document.Document, count: int):
     # Find the index of the "Thuốc:" paragraph
     thuoc_index = -1
     for i, p in enumerate(doc.paragraphs):
@@ -63,16 +69,20 @@ def duplicate(doc: document.Document, count: int):
     r2_p.getparent().remove(r2_p)
 
 
-def replace_prescription():
+def fill_main_frame_data():
     d = Document(str(PRESCRIPTION_TEMPLATE))
-    duplicate(d, get_main_frame().medicine_list.ItemCount)
+    _duplicate_medicine_rows(d, get_main_frame().medicine_list.ItemCount)
+    date = wx.DateTime()
+    date.ParseISOCombined(get_main_frame().visit_exam_datetime.Value)
     data = {
-        "name": get_main_frame().patient_name.Value.strip(),
-        "gender": f"{get_main_frame().patient_gender.GetGender().display_name}",
-        "birthdate": f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
+        "name": get_main_frame().patient_name.Value,
+        "gender": get_main_frame().patient_gender.GetGender().display_name,
+        "birthdate": get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT),
         "weight": str(get_main_frame().visit_weight.GetInt()),
         "diagnosis": get_main_frame().visit_diagnosis.Value.strip(),
+        "days": str(get_main_frame().visit_days.Value),
         "note": get_main_frame().visit_note.Value.strip(),
+        "date": wxdatetime_to_vietnamese_date(date),
     }
     for i in range(get_main_frame().medicine_list.ItemCount):
         data |= {

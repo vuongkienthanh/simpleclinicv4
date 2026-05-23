@@ -74,6 +74,10 @@ class MainFrame(wx.Frame):
         self.visit_box.SetOwnBackgroundColour(
             wx.Colour(*get_app().config["theme"]["visit_info"])
         )
+        self.visit_exam_datetime = wx.TextCtrl(
+            self.visit_box, style=wx.TE_READONLY, size=wx.Size(150, -1)
+        )
+        self.visit_exam_datetime.Disable()
         self.visit_weight = DecimalIntCtrl(self.visit_box)
         self.visit_days = IntCtrl(self.visit_box, min=0, limited=True)
         self.visit_price = ThousandGroupIntCtrl(self.visit_box)
@@ -169,7 +173,9 @@ class MainFrame(wx.Frame):
             ]
         )
         row1 = row(
-            static(self.visit_box, "Cân nặng: ", 100),
+            static(self.visit_box, "Khám lúc", 100),
+            (self.visit_exam_datetime, 0, EA, 2),
+            static(self.visit_box, "Cân nặng: "),
             (self.visit_weight, 0, EA, 2),
             static(self.visit_box, "Số ngày thuốc: "),
             (self.visit_days, 0, EA, 2),
@@ -398,6 +404,7 @@ class MainFrame(wx.Frame):
         if value is None:
             self._visit_id = None
             self.visit_box.SetLabel("Thông tin lượt khám")
+            self.visit_exam_datetime.ChangeValue("")
             self.visit_weight.SetInt(Decimal())
             self.visit_days.SetValue(
                 get_app().config["process"]["default_days_for_prescription"]
@@ -418,7 +425,7 @@ class MainFrame(wx.Frame):
                 get_app()
                 .conn.execute(
                     """
-                    SELECT weight, days, medical_history, diagnosis, note, price
+                    SELECT exam_datetime, weight, days, medical_history, diagnosis, note, price
                     FROM visits
                     WHERE id = ?
                     """,
@@ -427,6 +434,9 @@ class MainFrame(wx.Frame):
                 .fetchone()
             )
             self.visit_box.SetLabel(f"Thông tin lượt khám: {value}")
+            self.visit_exam_datetime.ChangeValue(
+                visit["exam_datetime"].FormatISOCombined()
+            )
             self.visit_weight.SetInt(Decimal(visit["weight"]) / 10)
             self.visit_days.SetValue(visit["days"])
             self.visit_price.SetInt(visit["price"])
@@ -650,8 +660,10 @@ class MainFrame(wx.Frame):
             if id is None:
                 id = insert(get_app().conn, patient)
                 self._patient_id = id
+                wx.MessageBox("Thêm bệnh nhân thành côg")
             else:
                 update(get_app().conn, patient, id)
+                wx.MessageBox("Cập nhật bệnh nhân thành côg")
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
         finally:
@@ -679,11 +691,10 @@ class MainFrame(wx.Frame):
                         """,
                     (self.patient_id,),
                 )
-                .fetchone()["weight"]
+                .fetchone()
             )
-
             if last_weight:
-                self.visit_weight.SetInt(Decimal(last_weight) / 10)
+                self.visit_weight.SetInt(Decimal(last_weight["weight"]) / 10)
             else:
                 self.visit_weight.SetInt(Decimal())
 
@@ -716,6 +727,7 @@ class MainFrame(wx.Frame):
                         insert(get_app().conn, item)
                     for item in self.service_list.to_model():
                         insert(get_app().conn, item)
+                    wx.MessageBox("Thêm lượt khám thành công")
                 else:
                     update(get_app().conn, visit, id)
                     get_app().conn.execute(
@@ -728,10 +740,15 @@ class MainFrame(wx.Frame):
                         insert(get_app().conn, item)
                     for item in self.service_list.to_model():
                         insert(get_app().conn, item)
+                    wx.MessageBox("Cập nhật lượt khám thành công")
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
             finally:
+                get_app().fetch_medicine_store()
                 self.populate_visit_list()
+                self.visit_exam_datetime.ChangeValue(
+                    wx.DateTime.Today().FormatISOCombined()
+                )
                 self.visit_edit_mode(False)
 
     def on_visit_cancel_btn(self, _):

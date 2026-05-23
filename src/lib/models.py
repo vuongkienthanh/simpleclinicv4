@@ -1,5 +1,8 @@
-from lib.enums import Gender
+"""
+models are use for insert and update, not for select results
+"""
 
+from lib.enums import Gender
 from dataclasses import dataclass
 from typing import ClassVar, final
 

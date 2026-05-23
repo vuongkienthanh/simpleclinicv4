@@ -1,6 +1,6 @@
 import wx
 import sqlite3
-from lib.vn import wxdatetime_to_vietnamese
+from lib.vn import wxdatetime_to_vietnamese_datetime
 from lib.wx_helper import get_main_frame
 
 
@@ -17,7 +17,7 @@ class List(wx.ListCtrl):
         self.Append(
             [
                 str(item["id"]),
-                wxdatetime_to_vietnamese(item["exam_datetime"]),
+                wxdatetime_to_vietnamese_datetime(item["exam_datetime"]),
                 item["diagnosis"],
             ]
         )

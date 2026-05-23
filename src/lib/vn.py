@@ -25,7 +25,7 @@ def bd_to_age(bd: wx.DateTime) -> str:
 VIETNAMESE_WEEKDAYS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 
 
-def wxdatetime_to_vietnamese(dt: wx.DateTime) -> str:
+def wxdatetime_to_vietnamese_datetime(dt: wx.DateTime) -> str:
     """
     Converts a wx.DateTime to a Vietnamese datetime string format:
     Example: "T2 15/02/1991 19:00"
@@ -42,4 +42,20 @@ def wxdatetime_to_vietnamese(dt: wx.DateTime) -> str:
     formatted_date = (
         f"{vietnam_weekday} {day:02d}/{month:02d}/{year} {hour:02d}:{minute:02d}"
     )
+    return formatted_date
+
+
+def wxdatetime_to_vietnamese_date(dt: wx.DateTime) -> str:
+    """
+    Converts a wx.DateTime to a Vietnamese date string format:
+    Example: "T2 ngày 15 tháng 02 năm 1991 "
+    """
+    # Get weekday index (0=Sunday), day, month, year, hour, minute, second
+    weekday = dt.GetWeekDay()  # wx.DateTime.wxDateTimeWeekDay
+    day = dt.GetDay()
+    month = dt.GetMonth() + 1  # wxPython months go from 0-11
+    year = dt.GetYear()
+
+    vietnam_weekday = VIETNAMESE_WEEKDAYS[weekday]
+    formatted_date = f"{vietnam_weekday} ngày {day:02d} tháng {month:02d} năm {year}"
     return formatted_date

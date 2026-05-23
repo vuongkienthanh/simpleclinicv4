@@ -42,9 +42,9 @@ CFG = APP_DIR / "config.toml"
 DB = APP_DIR / "simpleclinic.db"
 
 ######
-DEFAULT_PRESCRIPTION_TEMPLATE = ASSETS / "default_donthuoc_template.docx"
-PRESCRIPTION_TEMPLATE = APP_DIR / "donthuoc_template.docx"
-PRESCRIPTION_OUTPUT = APP_DIR / "donthuoc.docx"
+DEFAULT_PRESCRIPTION_TEMPLATE = ASSETS / "default_prescription_template.docx"
+PRESCRIPTION_TEMPLATE = APP_DIR / "prescription_template.docx"
+PRESCRIPTION_OUTPUT = APP_DIR / "prescription.docx"
 
 
 # # sample dir

@@ -14,21 +14,3 @@ class Gender(Enum):
 
     def __init__(self, _, display_name: str):
         self.display_name = display_name
-
-
-class VNWeekday(Enum):
-    T2 = 0, "Thứ hai"
-    T3 = 1, "Thứ ba"
-    T4 = 2, "Thứ tư"
-    T5 = 3, "Thứ năm"
-    T6 = 4, "Thứ sáu"
-    T7 = 5, "Thứ bảy"
-    CN = 6, "Chủ nhật"
-
-    def __new__(cls, value: int, _: str) -> Self:
-        self = object.__new__(cls)
-        self._value_ = value
-        return self
-
-    def __init__(self, _, display_name: str):
-        self.display_name = display_name
