@@ -46,6 +46,10 @@ DEFAULT_PRESCRIPTION_TEMPLATE = ASSETS / "default_prescription_template.docx"
 PRESCRIPTION_TEMPLATE = APP_DIR / "prescription_template.docx"
 PRESCRIPTION_OUTPUT = APP_DIR / "prescription.docx"
 
+######
+DEFAULT_S1A_TEMPLATE = ASSETS / "mau_s1a.xlsx"
+S1A_TEMPLATE = APP_DIR / "s1a_template.xlsx"
+S1A_OUTPUT = APP_DIR / "s1a.xlsx"
 
 # # sample dir
 # SAMPLE_DIR = os.path.join(SRC_DIR, "sample")

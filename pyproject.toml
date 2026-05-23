@@ -7,6 +7,7 @@ authors = [{ name = "vuongkienthanh", email = "thanhstardust@outlook.com" }]
 urls = { repository = "https://github.com/vuongkienthanh/SimpleClinic" }
 requires-python = ">=3.14"
 dependencies = [
+    "openpyxl>=3.1.5",
     "python-docx >= 1.2.0",
     "python-docx-replace>=0.4.4",
     "wxpython>=4.2.5",
@@ -37,8 +38,9 @@ reportMissingParameterType = false
 reportUnknownLambdaType = false
 
 [project.scripts]
-init_db = "init_db:main"
+init = "init:main"
 backup_db = "backup_db:main"
+s1a = "s1a:main"
 
 [project.gui-scripts]
 simpleclinic = "simpleclinic:main"

@@ -45,7 +45,7 @@ class MenuBar(wx.MenuBar):
 
         setting = wx.Menu()
 
-        open_config_folder = setting.Append(wx.ID_ANY, "Mở folder cài đặt + dữ liệu")
+        open_config_folder = setting.Append(wx.ID_ANY, "Mở folder dữ liệu")
         self.Bind(wx.EVT_MENU, self.on_open_config_folder, open_config_folder)
 
         self.Append(home, "&Home")
