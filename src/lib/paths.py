@@ -26,7 +26,7 @@ MEDICINE_BM = BITMAPS / "medicine.png"
 SERVICE_BM = BITMAPS / "service.png"
 
 #######
-ICONS = ASSETS/ "icons"
+ICONS = ASSETS / "icons"
 LOGO = ICONS / "logo.png"
 
 #######
@@ -35,11 +35,16 @@ START_APP_SQL = ASSETS / "start_app.sql"
 CLOSE_APP_SQL = ASSETS / "close_app.sql"
 
 ######
-DEFAULT_CFG_PATH = ASSETS / "default_config.toml"
-CFG_PATH = APP_DIR / "config.toml"
+DEFAULT_CFG = ASSETS / "default_config.toml"
+CFG = APP_DIR / "config.toml"
 
 ######
-DB_PATH = APP_DIR / "simpleclinic.db"
+DB = APP_DIR / "simpleclinic.db"
+
+######
+DEFAULT_PRESCRIPTION_TEMPLATE = ASSETS / "default_donthuoc_template.docx"
+PRESCRIPTION_TEMPLATE = APP_DIR / "donthuoc_template.docx"
+PRESCRIPTION_OUTPUT = APP_DIR / "donthuoc.docx"
 
 
 # # sample dir

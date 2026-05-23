@@ -1,15 +1,15 @@
-from lib.paths import DB_PATH, APP_DIR
+from lib.paths import DB, APP_DIR
 import shutil
 import datetime as dt
 
 
 def main():
-    print(f"checking database at {DB_PATH} ...")
-    if DB_PATH.exists():
+    print(f"checking database at {DB} ...")
+    if DB.exists():
         print("A database file existed.")
         if input("Back up database?[y/n]") == "y":
             bk = APP_DIR / ("simpleclinic" + dt.datetime.now().isoformat() + ".bak")
-            shutil.copyfile(DB_PATH, bk)
+            shutil.copyfile(DB, bk)
             print(f"Back up to {bk}")
     else:
         print("A database file doesn't exist.")

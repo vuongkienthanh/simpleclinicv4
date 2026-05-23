@@ -1,3 +1,4 @@
+from lib import DATE_FORMAT
 from lib.enums import Gender
 import sqlite3
 import wx
@@ -12,7 +13,7 @@ def custom_type_datetime():
 
     def convert_date(b: bytes) -> wx.DateTime:
         d = wx.DateTime()
-        d.ParseISODate(b.decode())
+        d.ParseFormat(b.decode(), DATE_FORMAT)
         return d
 
     sqlite3.register_converter("DATETIME", convert_datetime)

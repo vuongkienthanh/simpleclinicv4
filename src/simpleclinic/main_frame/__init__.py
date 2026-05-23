@@ -439,9 +439,9 @@ class MainFrame(wx.Frame):
                 get_app()
                 .conn.execute(
                     """
-                    SELECT s.id, s.name, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
+                    SELECT s.id, s.name, s.element, s.route, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
                     FROM (SELECT medicine_id, times, dose, quantity, usage_note FROM medicines WHERE visit_id=?) AS m
-                    JOIN (SELECT id, name, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
+                    JOIN (SELECT id, name, element, route, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
                     WHERE s.id = m.medicine_id
                     """,
                     (value,),

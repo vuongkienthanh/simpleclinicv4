@@ -1,7 +1,7 @@
-from lib.paths import CFG_PATH
+from lib.paths import CFG
 import tomllib
 
 
 def get_config():
-    with open(CFG_PATH, "rb") as f:
+    with open(CFG, "rb") as f:
         return tomllib.load(f)

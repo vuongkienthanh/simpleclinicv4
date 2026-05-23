@@ -5,8 +5,9 @@ import wx
 import wx.adv
 from lib import DATE_FORMAT
 from lib.wx_helper import get_app, get_main_frame
-from lib.paths import APP_DIR, LOGO
+from lib.paths import APP_DIR, LOGO, PRESCRIPTION_OUTPUT
 from lib.vn import bd_to_age
+from ._printer import replace_prescription
 
 
 class MenuBar(wx.MenuBar):
@@ -69,7 +70,9 @@ class MenuBar(wx.MenuBar):
         info.SetWebSite(get_app().url)
         wx.adv.AboutBox(info)
 
-    def on_print(self, _): ...
+    def on_print(self, _): 
+        replace_prescription()
+        wx.LaunchDefaultApplication(str(PRESCRIPTION_OUTPUT))
 
     def on_copy_info(self, _):
         if wx.TheClipboard.Open():
@@ -97,10 +100,10 @@ class MenuBar(wx.MenuBar):
                             "{}/ {} {} x {} = {} ({})".format(
                                 i + 1,
                                 get_main_frame().medicine_list.GetItemText(i, 2),
-                                get_main_frame().medicine_list.GetItemText(i, 3),
-                                get_main_frame().medicine_list.GetItemText(i, 4),
                                 get_main_frame().medicine_list.GetItemText(i, 5),
                                 get_main_frame().medicine_list.GetItemText(i, 6),
+                                get_main_frame().medicine_list.GetItemText(i, 7),
+                                get_main_frame().medicine_list.GetItemText(i, 8),
                             )
                             for i in range(get_main_frame().medicine_list.ItemCount)
                         ]

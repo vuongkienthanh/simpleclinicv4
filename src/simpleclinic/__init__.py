@@ -1,7 +1,7 @@
 import sqlite3
 import tomllib
 import wx
-from lib.paths import DB_PATH, CFG_PATH, PYPROJECT, START_APP_SQL, CLOSE_APP_SQL
+from lib.paths import DB, CFG, PYPROJECT, START_APP_SQL, CLOSE_APP_SQL
 from lib.config import get_config
 from lib.db import connect
 from lib.wx_helper import get_main_frame
@@ -36,7 +36,7 @@ class App(wx.App):
             self.url = data["project"]["urls"]["repository"]
 
         self.config = get_config()
-        self.conn = connect(DB_PATH)
+        self.conn = connect(DB)
 
         # CREATE TRIGGERS at start
         with open(START_APP_SQL, "r") as f:
@@ -86,8 +86,8 @@ class App(wx.App):
 
 def main():
     print("Checking health:... ", end="")
-    assert DB_PATH.exists(), "should have a database"
-    assert CFG_PATH.exists(), "should have a config file"
+    assert DB.exists(), "should have a database"
+    assert CFG.exists(), "should have a config file"
     print("Done")
 
     platform_settings()

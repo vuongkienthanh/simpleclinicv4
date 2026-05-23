@@ -1,5 +1,5 @@
 INSERT OR REPLACE INTO simpleclinic.patients (id, name, gender, birthdate, past_history)
-SELECT MAX(id), name, gender, strftime('%F',DATETIME(birthdate)), ''
+SELECT MAX(id), name, gender, strftime('%d/%m/%Y',DATETIME(birthdate)), ''
 FROM patients
 GROUP BY name;
 

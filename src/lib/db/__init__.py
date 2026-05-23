@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Any
@@ -19,12 +20,12 @@ def connect(path: Path) -> Connection:
 
 def _process_misc(
     t: BASEMODEL, misc: dict[str, Any] | None = None
-) -> tuple[list[str], dict[str, Any]]:
+) -> tuple[Iterable[str], dict[str, Any]]:
     if misc is None:
-        field_names = [f.name for f in fields(t)]
+        field_names = (f.name for f in fields(t))
         value = {attr.name: getattr(t, attr.name) for attr in fields(t)}
     else:
-        field_names = list(chain((f.name for f in fields(t)), ("misc",)))
+        field_names = chain((f.name for f in fields(t)), ("misc",))
         value = {attr.name: getattr(t, attr.name) for attr in fields(t)} | {
             "misc": misc
         }

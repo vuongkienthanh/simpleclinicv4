@@ -12,6 +12,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("STT", width=-1)
         self.AppendColumn("Mã thuốc", width=-1)
         self.AppendColumn("Thuốc", width=200)
+        self.AppendColumn("Thành phần", width=-1)
+        self.AppendColumn("Cách dùng", width=-1)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
         self.AppendColumn("Số lượng", width=-1)
@@ -26,6 +28,8 @@ class List(wx.ListCtrl):
                 str(self.GetItemCount() + 1),
                 item["id"],
                 item["name"],
+                item["element"],
+                item['route'],
                 str(item["times"]),
                 f"{item['dose']} {item['usage_unit']}",
                 f"{item['quantity']} {item['selling_unit']}",
@@ -58,10 +62,10 @@ class List(wx.ListCtrl):
             yield Medicine(
                 medicine_id=int(self.GetItemText(i, 1)),
                 visit_id=visit_id,
-                times=int(self.GetItemText(i, 3)),
-                dose=self.GetItemText(i, 4).split(" ", 1)[0],
-                quantity=int(self.GetItemText(i, 5).split(" ", 1)[0]),
-                usage_note=self.GetItemText(i, 6),
+                times=int(self.GetItemText(i, 5)),
+                dose=self.GetItemText(i, 6).split(" ", 1)[0],
+                quantity=int(self.GetItemText(i, 7).split(" ", 1)[0]),
+                usage_note=self.GetItemText(i, 8),
             )
 
 
