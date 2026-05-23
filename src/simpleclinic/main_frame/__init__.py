@@ -15,7 +15,7 @@ from lib.wx_helper.widget import (
     ThousandGroupIntCtrl,
     DecimalIntCtrl,
 )
-from lib.models import Patient, Visit
+from lib.db.models import Patient, Visit
 from lib.enums import Gender
 from lib.db import insert, update
 from lib.vn import bd_to_age

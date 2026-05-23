@@ -1,6 +1,6 @@
 import wx
 from lib.wx_helper import EA, row, column
-from lib.models import ServiceStore
+from lib.db.models import ServiceStore
 from lib.wx_helper.widget import ThousandGroupIntCtrl
 
 

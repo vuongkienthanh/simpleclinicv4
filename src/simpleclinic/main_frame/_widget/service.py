@@ -2,7 +2,7 @@ from collections.abc import Iterable
 import wx
 import sqlite3
 from typing import override
-from lib.models import Service
+from lib.db.models import Service
 from lib.wx_helper import get_app, get_main_frame
 
 

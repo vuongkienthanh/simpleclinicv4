@@ -1,7 +1,7 @@
 import wx
 from wx.lib.intctrl import IntCtrl
 from lib.wx_helper import EA, row, column
-from lib.models import MedicineStore
+from lib.db.models import MedicineStore
 from lib.wx_helper.widget import ThousandGroupIntCtrl
 
 

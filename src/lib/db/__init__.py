@@ -5,7 +5,7 @@ from typing import Any
 from dataclasses import fields
 from itertools import chain
 
-from lib.models import BASEMODEL
+from .models import BASEMODEL
 from ._custom_types import *
 
 custom_type_datetime()

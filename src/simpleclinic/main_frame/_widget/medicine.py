@@ -3,7 +3,7 @@ import wx
 import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
-from lib.models import Medicine
+from lib.db.models import Medicine
 
 
 class List(wx.ListCtrl):

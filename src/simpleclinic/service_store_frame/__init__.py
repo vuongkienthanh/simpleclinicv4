@@ -4,7 +4,7 @@ from ._widget import List
 from simpleclinic.service_dialog import AddDialog, UpdateDialog
 from lib.wx_helper import EA, row, column, get_app
 from lib.db import delete
-from lib.models import ServiceStore
+from lib.db.models import ServiceStore
 
 
 class StoreFrame(wx.Frame):

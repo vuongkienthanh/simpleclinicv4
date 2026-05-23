@@ -1,6 +1,6 @@
 import wx
 from lib.db import delete
-from lib.models import MedicineStore
+from lib.db.models import MedicineStore
 from lib.wx_helper import row, column, get_app
 import sqlite3
 from simpleclinic.medicine_dialog import AddDialog, UpdateDialog
