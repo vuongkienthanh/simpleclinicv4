@@ -320,19 +320,6 @@ class MainFrame(wx.Frame):
         self.visit_ok_btn.Bind(wx.EVT_BUTTON, self.on_visit_ok_btn)
         self.visit_cancel_btn.Bind(wx.EVT_BUTTON, self.on_visit_cancel_btn)
 
-        # beginning state
-        self.patient_edit_mode(False)
-        self.visit_edit_mode(False)
-        self.medicine_edit_mode(False)
-        self.service_edit_mode(False)
-        self.visit_days.ChangeValue(
-            get_app().config["process"]["default_days_for_prescription"]
-        )
-        self.visit_price.SetInt(get_app().config["process"]["price"])
-        self.patient_search.SetFocus()
-        self.populate_seentoday()
-        self.populate_follow_up()
-
         self.SetAcceleratorTable(
             wx.AcceleratorTable(
                 [
@@ -551,10 +538,15 @@ class MainFrame(wx.Frame):
         self.visit_id = None
         self.medicine = None
         self.service = None
-        self.populate_queue(self.patient_search.Value.strip())
+        self.queue.DeleteAllItems()
         self.populate_seentoday()
         self.populate_follow_up()
-        self.populate_visit_list()
+        self.visit_list.DeleteAllItems()
+        self.patient_edit_mode(False)
+        self.visit_edit_mode(False)
+        self.medicine_edit_mode(False)
+        self.service_edit_mode(False)
+        self.patient_search.SetFocus()
 
     def populate_queue(self, value: str = ""):
         self.queue.DeleteAllItems()

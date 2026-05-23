@@ -31,15 +31,13 @@ LOGO = ICONS / "logo.png"
 
 #######
 SCHEMA_SQL = ASSETS / "schema.sql"
-START_APP_SQL = ASSETS / "start_app.sql"
-CLOSE_APP_SQL = ASSETS / "close_app.sql"
+
+######
+DB = APP_DIR / "simpleclinic.db"
 
 ######
 DEFAULT_CFG = ASSETS / "default_config.toml"
 CFG = APP_DIR / "config.toml"
-
-######
-DB = APP_DIR / "simpleclinic.db"
 
 ######
 DEFAULT_PRESCRIPTION_TEMPLATE = ASSETS / "default_prescription_template.docx"
@@ -47,9 +45,6 @@ PRESCRIPTION_TEMPLATE = APP_DIR / "prescription_template.docx"
 PRESCRIPTION_OUTPUT = APP_DIR / "prescription.docx"
 
 ######
-DEFAULT_S1A_TEMPLATE = ASSETS / "mau_s1a.xlsx"
+DEFAULT_S1A_TEMPLATE = ASSETS / "default_s1a_template.xlsx"
 S1A_TEMPLATE = APP_DIR / "s1a_template.xlsx"
 S1A_OUTPUT = APP_DIR / "s1a.xlsx"
-
-# # sample dir
-# SAMPLE_DIR = os.path.join(SRC_DIR, "sample")

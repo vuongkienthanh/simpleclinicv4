@@ -38,9 +38,25 @@ class App(wx.App):
         self.config = get_config()
         self.conn = connect(DB)
 
-        # CREATE TRIGGERS at start
-        with open(START_APP_SQL, "r") as f:
-            self.conn.executescript(f.read())
+        self.conn.executescript(
+            """
+            PRAGMA foreign_keys = ON;
+
+            CREATE TRIGGER IF NOT EXISTS medicine_insert 
+            BEFORE INSERT ON medicines
+            BEGIN
+                UPDATE medicine_store SET quantity = quantity - NEW.quantity
+                    WHERE id = NEW.medicine_id;
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS medicine_delete
+            BEFORE DELETE ON medicines
+            BEGIN
+                UPDATE medicine_store SET quantity = quantity + OLD.quantity
+                    WHERE id = OLD.medicine_id;
+            END;
+            """
+        )
 
         main_frame = MainFrame()
         main_frame.Show()
@@ -49,17 +65,18 @@ class App(wx.App):
         # DATA
         self.medicine_store: list[sqlite3.Row]
         self.service_store: list[sqlite3.Row]
-        self.fetch_stable_data()
-
-        main_frame.patient_id = None
-        main_frame.visit_id = None
-        main_frame.medicine = None
-        main_frame.service = None
+        self.refresh()
 
     @override
     def __del__(self):
-        with open(CLOSE_APP_SQL, "r") as f:
-            self.conn.executescript(f.read())
+        self.conn.executescript(
+            """
+            PRAGMA optimize;
+
+            DROP TRIGGER medicine_insert;
+            DROP TRIGGER medicine_delete;
+            """
+        )
         self.conn.close()
         super().__del__()
 

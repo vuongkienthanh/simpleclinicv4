@@ -11,8 +11,6 @@ from . import (
 )
 from decimal import Decimal
 
-INT_KEYS = NUMBERS + NUMPADS + SPECIALS
-
 
 class GenderChoiceCtrl(wx.Choice):
     def __init__(self, parent, **kwargs):
@@ -35,10 +33,10 @@ class DoseCtrl(wx.TextCtrl):
 
     def on_char(self, e: wx.KeyEvent):
         s = self.Value
-        if "/" not in s and "." not in s:
-            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS, SLASH, DECIMAL)
+        if "/" in s or "." in s:
+            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS)
         else:
-            keys = INT_KEYS
+            keys = chain(NUMBERS, NUMPADS, SPECIALS, DIRECTIONS, SLASH, DECIMAL)
 
         if e.KeyCode in keys:
             e.Skip()

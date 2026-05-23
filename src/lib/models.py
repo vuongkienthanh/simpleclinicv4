@@ -1,5 +1,5 @@
 """
-models are use for insert and update, not for select results
+models are use for insert and update, not for select
 """
 
 from lib.enums import Gender
