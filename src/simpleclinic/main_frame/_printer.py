@@ -90,12 +90,12 @@ def fill_main_frame_data():
             f"mname{i}": get_main_frame().medicine_list.GetItemText(i, 2),
             f"element{i}": get_main_frame().medicine_list.GetItemText(i, 3),
             f"quantity{i}": get_main_frame().medicine_list.GetItemText(i, 6),
-            f"usage{i}": "{} ngày {}, lần {} ({})".format(
+            f"usage{i}": "{} ngày {}, lần {} {}".format(
                 get_main_frame().medicine_list.GetItemText(i, 4),
                 get_main_frame().medicine_list.GetItemText(i, 5),
                 get_main_frame().medicine_list.GetItemText(i, 6),
                 get_main_frame().medicine_list.GetItemText(i, 8),
             ),
         }
-    docx_replace(data)
+    docx_replace(d, **data)
     d.save(str(PRESCRIPTION_OUTPUT))

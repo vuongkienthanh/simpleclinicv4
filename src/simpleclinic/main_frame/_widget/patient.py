@@ -10,7 +10,7 @@ class List(wx.ListCtrl):
         self.AppendColumn("Mã BN", width=-1)
         self.AppendColumn("Tên", width=300)
         self.AppendColumn("Giới", width=-2)
-        self.AppendColumn("Ngày sinh", width=-2)
+        self.AppendColumn("Ngày sinh", width=150)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_patient_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
 

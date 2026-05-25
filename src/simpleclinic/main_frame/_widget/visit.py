@@ -7,9 +7,9 @@ from lib.wx_helper import get_main_frame
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("Mã lượt khám", width=-2)
+        self.AppendColumn("Mã lượt khám", width=-1)
         self.AppendColumn("Ngày giờ khám", width=200)
-        self.AppendColumn("Chẩn đoán", width=300)
+        self.AppendColumn("Chẩn đoán", width=200)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
 

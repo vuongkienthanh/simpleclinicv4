@@ -258,7 +258,7 @@ class MainFrame(wx.Frame):
         self.SetSizerAndFit(
             row(
                 (left, 1, EA, 5),
-                (right, 2, EA, 5),
+                (right, 3, EA, 5),
             )
         )
 

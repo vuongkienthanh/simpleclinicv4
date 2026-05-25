@@ -1,5 +1,4 @@
 import datetime as dt
-import textwrap
 
 import wx
 import wx.adv
@@ -68,51 +67,49 @@ class MenuBar(wx.MenuBar):
 
     def on_copy_info(self, _):
         if wx.TheClipboard.Open():
-            t = textwrap.dedent(
-                """
-            {}
-            {} ({} {} {})
-            Chẩn đoán: {}
-            Thuốc {} ngày:
-            {}
-            Thủ thuật:
-            {}
-            Dặn dò: {}
-            Tiền khám: {}
+            t = """
+{}
+{} ({} {} {})
+Chẩn đoán: {}
+Thuốc {} ngày:
+{}
+Thủ thuật:
+{}
+Dặn dò: {}
+Tiền khám: {}
             """.format(
-                    dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    f"{get_main_frame().patient_name.Value}",
-                    f"{get_main_frame().patient_gender.GetGender().display_name}",
-                    f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
-                    f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
-                    get_main_frame().visit_diagnosis.Value,
-                    get_main_frame().visit_days.Value,
-                    "\n".join(
-                        [
-                            "{}/ {} {} x {} = {} ({})".format(
-                                i + 1,
-                                get_main_frame().medicine_list.GetItemText(i, 2),
-                                get_main_frame().medicine_list.GetItemText(i, 5),
-                                get_main_frame().medicine_list.GetItemText(i, 6),
-                                get_main_frame().medicine_list.GetItemText(i, 7),
-                                get_main_frame().medicine_list.GetItemText(i, 8),
-                            )
-                            for i in range(get_main_frame().medicine_list.ItemCount)
-                        ]
-                    ),
-                    "\n".join(
-                        [
-                            "{}/ {} x {}".format(
-                                i + 1,
-                                get_main_frame().service_list.GetItemText(i, 2),
-                                get_main_frame().service_list.GetItemText(i, 3),
-                            )
-                            for i in range(get_main_frame().service_list.ItemCount)
-                        ]
-                    ),
-                    get_main_frame().visit_note.Value,
-                    get_main_frame().visit_price.Value,
-                )
+                dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
+                f"{get_main_frame().patient_name.Value}",
+                f"{get_main_frame().patient_gender.GetGender().display_name}",
+                f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
+                f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
+                get_main_frame().visit_diagnosis.Value,
+                get_main_frame().visit_days.Value,
+                "\n".join(
+                    [
+                        "{}/ {} {} x {} = {} {}".format(
+                            i + 1,
+                            get_main_frame().medicine_list.GetItemText(i, 2),
+                            get_main_frame().medicine_list.GetItemText(i, 5),
+                            get_main_frame().medicine_list.GetItemText(i, 6),
+                            get_main_frame().medicine_list.GetItemText(i, 7),
+                            get_main_frame().medicine_list.GetItemText(i, 8),
+                        )
+                        for i in range(get_main_frame().medicine_list.ItemCount)
+                    ]
+                ),
+                "\n".join(
+                    [
+                        "{}/ {} x {}".format(
+                            i + 1,
+                            get_main_frame().service_list.GetItemText(i, 2),
+                            get_main_frame().service_list.GetItemText(i, 3),
+                        )
+                        for i in range(get_main_frame().service_list.ItemCount)
+                    ]
+                ),
+                get_main_frame().visit_note.Value,
+                get_main_frame().visit_price.Value,
             ).strip()
             wx.TheClipboard.SetData(wx.TextDataObject(t))
             wx.TheClipboard.Close()
