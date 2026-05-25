@@ -1,7 +1,7 @@
 import sqlite3
 import tomllib
 import wx
-from lib.paths import DB, CFG, PYPROJECT, START_APP_SQL, CLOSE_APP_SQL
+from lib.paths import DB, CFG, PYPROJECT
 from lib.config import get_config
 from lib.db import connect
 from lib.wx_helper import get_main_frame
