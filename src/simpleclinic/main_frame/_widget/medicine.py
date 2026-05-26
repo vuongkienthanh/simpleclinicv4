@@ -29,7 +29,7 @@ class List(wx.ListCtrl):
                 item["id"],
                 item["name"],
                 item["element"],
-                item['route'],
+                item["route"],
                 str(item["times"]),
                 f"{item['dose']} {item['usage_unit']}",
                 f"{item['quantity']} {item['selling_unit']}",
@@ -180,7 +180,6 @@ class Picker(wx.ComboCtrl):
         super().__init__(parent, style=wx.TE_PROCESS_ENTER)
         self.SetPopupControl(Popup())
         self.Bind(wx.EVT_CHAR, self.on_char)
-        self.Bind(wx.EVT_TEXT, self.on_text)
         self.SetHint("Enter để search thuốc")
 
     def on_char(self, e: wx.KeyEvent):
@@ -188,6 +187,3 @@ class Picker(wx.ComboCtrl):
             self.Popup()
         else:
             e.Skip()
-
-    def on_text(self, _):
-        get_main_frame().medicine = None
