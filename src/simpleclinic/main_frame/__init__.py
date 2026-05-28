@@ -95,9 +95,13 @@ class MainFrame(wx.Frame):
         self.medicine_times = IntCtrl(medicine_page, min=0, limited=True)
         self.medicine_dose = DoseCtrl(medicine_page)
         self.medicine_usage_unit = wx.StaticText(medicine_page, label="{đơn vị}")
-        self.medicine_quantity = IntCtrl(medicine_page, min=0, limited=True)
+        self.medicine_quantity = IntCtrl(
+            medicine_page, min=0, limited=True, style=wx.TE_PROCESS_ENTER
+        )
         self.medicine_selling_unit = wx.StaticText(medicine_page, label="{đơn vị}")
-        self.medicine_usage_note = wx.TextCtrl(medicine_page, size=wx.Size(250, -1))
+        self.medicine_usage_note = wx.TextCtrl(
+            medicine_page, size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER
+        )
         self.medicine_usage_note_txt = wx.StaticText(
             medicine_page, label="", size=wx.Size(500, -1)
         )
@@ -173,7 +177,7 @@ class MainFrame(wx.Frame):
             ]
         )
         row1 = row(
-            static(self.visit_box, "Khám lúc", 100),
+            static(self.visit_box, "Khám lúc:", 100),
             (self.visit_exam_datetime, 0, EA, 2),
             static(self.visit_box, "Cân nặng: "),
             (self.visit_weight, 0, EA, 2),
@@ -258,15 +262,15 @@ class MainFrame(wx.Frame):
         self.SetSizerAndFit(
             row(
                 (left, 1, EA, 5),
-                (right, 3, EA, 5),
+                (right, 2, EA, 5),
             )
         )
 
         # DATA
-        self._patient_id: int | None
-        self._visit_id: int | None
-        self._medicine: sqlite3.Row | None
-        self._service: sqlite3.Row | None
+        self._patient_id: int | None = None
+        self._visit_id: int | None = None
+        self._medicine_idx: int | None = None
+        self._service_idx: int | None = None
 
         # navigation
         self.patient_gender.Bind(
@@ -288,7 +292,6 @@ class MainFrame(wx.Frame):
 
         # others
         self.patient_search.Bind(wx.EVT_SEARCH, self.on_patient_search)
-        self.patient_birthdate.Bind(wx.adv.EVT_DATE_CHANGED, self.on_date_changed)
 
         # display_usage_note
         self.medicine_times.Bind(wx.EVT_TEXT, lambda _: self.display_usage_note())
@@ -304,6 +307,8 @@ class MainFrame(wx.Frame):
         )
 
         # list buttons
+        self.medicine_quantity.Bind(wx.EVT_TEXT_ENTER, self.on_medicine_add_btn)
+        self.medicine_usage_note.Bind(wx.EVT_TEXT_ENTER, self.on_medicine_add_btn)
         self.medicine_add_btn.Bind(wx.EVT_BUTTON, self.on_medicine_add_btn)
         self.medicine_del_btn.Bind(wx.EVT_BUTTON, self.on_medicine_del_btn)
         self.service_add_btn.Bind(wx.EVT_BUTTON, self.on_service_add_btn)
@@ -345,6 +350,7 @@ class MainFrame(wx.Frame):
             self.patient_name.Clear()
             self.patient_gender.SetGender(Gender(0))
             self.patient_birthdate.SetValue(wx.DateTime.Today())
+            self.patient_age.ChangeValue("")
             self.patient_past_history.Clear()
             self.patient_upd_btn.Disable()
             self.visit_list.DeleteAllItems()
@@ -364,6 +370,7 @@ class MainFrame(wx.Frame):
                 self.patient_name.ChangeValue(patient["name"])
                 self.patient_gender.SetGender(patient["gender"])
                 self.patient_birthdate.SetValue(patient["birthdate"])
+                self.patient_age.ChangeValue(bd_to_age(patient["birthdate"]))
                 self.patient_past_history.SetValue(patient["past_history"])
                 self.patient_upd_btn.Enable()
                 for item in (
@@ -402,8 +409,8 @@ class MainFrame(wx.Frame):
             self.visit_note.Clear()
             self.visit_same_btn.Disable()
             self.visit_upd_btn.Disable()
-            self.medicine = None
-            self.service = None
+            self.medicine_idx = None
+            self.service_idx = None
             self.medicine_list.DeleteAllItems()
             self.service_list.DeleteAllItems()
         else:
@@ -462,12 +469,13 @@ class MainFrame(wx.Frame):
                 self.service_list.append(item)
 
     @property
-    def medicine(self) -> sqlite3.Row | None:
-        return self._medicine
+    def medicine_idx(self) -> int | None:
+        return self._medicine_idx
 
-    @medicine.setter
-    def medicine(self, value: sqlite3.Row | None):
+    @medicine_idx.setter
+    def medicine_idx(self, value: int | None):
         if value is None:
+            self._medicine_idx = None
             self.medicine_search.ChangeValue("")
             self.medicine_usage_unit.SetLabel("{đơn vị}")
             self.medicine_selling_unit.SetLabel("{đơn vị}")
@@ -478,23 +486,28 @@ class MainFrame(wx.Frame):
             self.medicine_usage_note_txt.SetLabel("")
             self.medicine_edit_mode(False)
         else:
-            self.medicine_search.ChangeValue(value["name"])
-            self.medicine_usage_unit.SetLabel(value["usage_unit"])
-            self.medicine_selling_unit.SetLabel(value["selling_unit"])
+            self._medicine_idx = value
+            m = get_app().medicine_store[value]
+            self.medicine_search.ChangeValue(m["name"])
+            self.medicine_usage_unit.SetLabel(m["usage_unit"])
+            self.medicine_selling_unit.SetLabel(m["selling_unit"])
             self.medicine_edit_mode()
 
     @property
-    def service(self) -> sqlite3.Row | None:
-        return self._service
+    def service_idx(self) -> int | None:
+        return self._service_idx
 
-    @service.setter
-    def service(self, value: sqlite3.Row | None):
+    @service_idx.setter
+    def service_idx(self, value: int | None):
         if value is None:
+            self._service_idx = None
             self.service_search.ChangeValue("")
             self.service_quantity.ChangeValue(0)  # pyright: ignore[reportArgumentType]
             self.service_edit_mode(False)
         else:
-            self.service_search.ChangeValue(value["name"])
+            self._service_idx = value
+            s = get_app().service_store[value]
+            self.service_search.ChangeValue(s["name"])
             self.service_edit_mode()
 
     def patient_edit_mode(self, b: bool = True):
@@ -536,8 +549,8 @@ class MainFrame(wx.Frame):
     def refresh(self):
         self.patient_id = None
         self.visit_id = None
-        self.medicine = None
-        self.service = None
+        self.medicine_idx = None
+        self.service_idx = None
         self.queue.DeleteAllItems()
         self.populate_seentoday()
         self.populate_follow_up()
@@ -546,6 +559,7 @@ class MainFrame(wx.Frame):
         self.visit_edit_mode(False)
         self.medicine_edit_mode(False)
         self.service_edit_mode(False)
+        self.GetSizer().Layout()
         self.patient_search.SetFocus()
 
     def populate_queue(self, value: str = ""):
@@ -589,20 +603,23 @@ class MainFrame(wx.Frame):
         self.populate_queue(e.String.strip().upper())
 
     def on_medicine_add_btn(self, _):
-        assert self.medicine is not None
+        assert self.medicine_idx is not None
+        m = get_app().medicine_store[self.medicine_idx]
         self.medicine_list.Append(
             [
                 str(self.medicine_list.ItemCount + 1),
-                self.medicine["id"],
-                self.medicine["name"],
-                self.medicine_times.Value.strip(),
-                f"{self.medicine_dose.Value.strip()} {self.medicine['usage_unit']}",
-                f"{self.medicine_quantity.Value.strip()} {self.medicine['selling_unit']}",
+                m["id"],
+                m["name"],
+                m["element"],
+                m["route"],
+                str(self.medicine_times.Value),
+                f"{self.medicine_dose.Value.strip()} {m['usage_unit']}",
+                f"{self.medicine_quantity.Value} {m['selling_unit']}",
                 self.medicine_usage_note.Value.strip(),
-                str(self.medicine["selling_price"] * self.medicine_quantity.Value),
+                str(m["selling_price"] * self.medicine_quantity.Value),
             ]
         )
-        self.medicine = None
+        self.medicine_idx = None
 
     def on_medicine_del_btn(self, _):
         i = self.medicine_list.GetFirstSelected()
@@ -610,20 +627,21 @@ class MainFrame(wx.Frame):
         self.medicine_list.DeleteItem(i)
         for i in range(self.medicine_list.ItemCount):
             self.medicine_list.SetItem(i, 0, str(i + 1))
-        self.medicine = None
+        self.medicine_idx = None
 
     def on_service_add_btn(self, _):
-        assert self.service is not None
+        assert self.service_idx is not None
+        s = get_app().service_store[self.service_idx]
         self.service_list.Append(
             [
                 str(self.service_list.ItemCount + 1),
-                self.service["id"],
-                self.service["name"],
+                s["id"],
+                s["name"],
                 str(self.service_quantity.Value),
-                str(self.service["price"] * self.service_quantity.Value),
+                str(s["price"] * self.service_quantity.Value),
             ]
         )
-        self.service = None
+        self.service_idx = None
 
     def on_service_del_btn(self, _):
         i = self.service_list.GetFirstSelected()
@@ -631,14 +649,16 @@ class MainFrame(wx.Frame):
         self.service_list.DeleteItem(i)
         for i in range(self.service_list.ItemCount):
             self.service_list.SetItem(i, 0, str(i + 1))
-        self.service = None
+        self.service_idx = None
 
     def on_patient_new_btn(self, _):
         self.patient_id = None
         self.patient_edit_mode()
+        self.GetSizer().Layout()
 
     def on_patient_upd_btn(self, _):
         self.patient_edit_mode()
+        self.GetSizer().Layout()
 
     def on_patient_ok_btn(self, _):
         id = self.patient_id
@@ -660,19 +680,25 @@ class MainFrame(wx.Frame):
             wx.MessageBox(str(error), "Lỗi")
         finally:
             self.patient_edit_mode(False)
+            self.GetSizer().Layout()
 
     def on_patient_cancel_btn(self, _):
         id = self.patient_id
         if id is None:
             self.patient_id = None
+            self.visit_id = None
         else:
             self.patient_id = id
+            self.visit_id = self.visit_id
         self.patient_edit_mode(False)
+        self.visit_edit_mode(False)
+        self.GetSizer().Layout()
 
     def on_visit_new_btn(self, _):
         if self.patient_id is not None:
             self.visit_id = None
             self.visit_edit_mode()
+            self.GetSizer().Layout()
             last_weight = (
                 get_app()
                 .conn.execute(
@@ -689,15 +715,18 @@ class MainFrame(wx.Frame):
                 self.visit_weight.SetInt(Decimal(last_weight["weight"]) / 10)
             else:
                 self.visit_weight.SetInt(Decimal())
+            self.visit_diagnosis.SetFocus()
 
     def on_visit_same_btn(self, _):
         if self.patient_id is not None:
             self._visit_id = None
             self.visit_edit_mode()
+            self.GetSizer().Layout()
 
     def on_visit_upd_btn(self, _):
         if self.patient_id is not None:
             self.visit_edit_mode()
+            self.GetSizer().Layout()
 
     def on_visit_ok_btn(self, _):
         if self.patient_id is not None:
@@ -752,48 +781,47 @@ class MainFrame(wx.Frame):
                 self.visit_id = id
             self.visit_edit_mode(False)
 
-    def on_date_changed(self, e: wx.adv.DateEvent):
-        self.patient_age.ChangeValue(bd_to_age(e.GetDate()))
-
     def display_usage_note(self):
-        assert self.medicine is not None
+        assert self.medicine_idx is not None
+        m = get_app().medicine_store[self.medicine_idx]
         if self.medicine_times.Value != "" and self.medicine_dose.Value != "":
             self.medicine_usage_note_txt.SetLabel(
                 "{} ngày {} lần, lần {} {} ({})".format(
-                    self.medicine["route"],
+                    m["route"],
                     self.medicine_times.Value.strip(),
                     self.medicine_dose.Value.strip(),
-                    self.medicine["usage_unit"],
+                    m["usage_unit"],
                     self.medicine_usage_note.Value.strip(),
                 )
             )
 
     def calculate_medicine_quatity(self):
-        assert self.medicine is not None
-        if self.medicine_times.Value != "" and self.medicine_dose.Value != "":
-            if self.medicine["selling_unit"] != self.medicine["usage_unit"]:
-                self.medicine_quantity.ChangeValue(1)  # pyright: ignore[reportArgumentType]
-            else:
-                if "/" in self.medicine_dose.Value:
-                    try:
-                        numer, denom = [
-                            int(i)
-                            for i in self.medicine_dose.Value.strip().split("/", 1)
-                        ]
+        if self.medicine_idx is not None:
+            m = get_app().medicine_store[self.medicine_idx]
+            if self.medicine_times.Value != "" and self.medicine_dose.Value != "":
+                if m["selling_unit"] != m["usage_unit"]:
+                    self.medicine_quantity.ChangeValue(1)  # pyright: ignore[reportArgumentType]
+                else:
+                    if "/" in self.medicine_dose.Value:
+                        try:
+                            numer, denom = [
+                                int(i)
+                                for i in self.medicine_dose.Value.strip().split("/", 1)
+                            ]
+                            self.medicine_quantity.ChangeValue(
+                                ceil(
+                                    self.medicine_times.Value  # pyright: ignore[reportOperatorIssue]
+                                    * Fraction(numer, denom)
+                                    * self.visit_days.Value
+                                )
+                            )
+                        except Exception:
+                            self.medicine_quantity.ChangeValue(0)  # pyright: ignore[reportArgumentType]
+                    else:
                         self.medicine_quantity.ChangeValue(
                             ceil(
                                 self.medicine_times.Value  # pyright: ignore[reportOperatorIssue]
-                                * Fraction(numer, denom)
+                                * float(self.medicine_dose.Value.strip())
                                 * self.visit_days.Value
                             )
                         )
-                    except Exception:
-                        self.medicine_quantity.ChangeValue(0)  # pyright: ignore[reportArgumentType]
-                else:
-                    self.medicine_quantity.ChangeValue(
-                        ceil(
-                            self.medicine_times.Value  # pyright: ignore[reportOperatorIssue]
-                            * float(self.medicine_dose.Value.strip())
-                            * self.visit_days.Value
-                        )
-                    )

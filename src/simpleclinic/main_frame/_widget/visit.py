@@ -9,7 +9,7 @@ class List(wx.ListCtrl):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("Mã lượt khám", width=-1)
         self.AppendColumn("Ngày giờ khám", width=200)
-        self.AppendColumn("Chẩn đoán", width=200)
+        self.AppendColumn("Chẩn đoán", width=250)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
 

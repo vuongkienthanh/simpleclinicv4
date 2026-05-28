@@ -8,9 +8,9 @@ class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("Mã BN", width=-1)
-        self.AppendColumn("Tên", width=300)
+        self.AppendColumn("Tên", width=280)
         self.AppendColumn("Giới", width=-2)
-        self.AppendColumn("Ngày sinh", width=150)
+        self.AppendColumn("Ngày sinh", width=130)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_patient_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
 

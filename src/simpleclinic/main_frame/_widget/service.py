@@ -4,6 +4,7 @@ import sqlite3
 from typing import override
 from lib.db.models import Service
 from lib.wx_helper import get_app, get_main_frame
+from bisect import bisect_left
 
 
 class List(wx.ListCtrl):
@@ -30,14 +31,13 @@ class List(wx.ListCtrl):
 
     def on_service_list_select(self, e: wx.ListEvent):
         service_id = int(self.GetItemText(e.Index, 1))
-        for i, m in enumerate(get_app().service_store):
-            if m["id"] == service_id:
-                get_main_frame().service = get_app().service_store[i]
-                break
+        get_main_frame().service_idx = bisect_left(
+            get_app().service_store, service_id, key=lambda r: r["id"]
+        )
         get_main_frame().service_quantity.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
 
     def on_service_list_deselect(self, _):
-        get_main_frame().service = None
+        get_main_frame().service_idx = None
 
     def to_model(self) -> Iterable[Service]:
         visit_id = get_main_frame().visit_id
@@ -117,7 +117,7 @@ class Popup(wx.ComboPopup):
             self.select_item()
 
     def select_item(self):
-        get_main_frame().service = get_app().service_store[self._ptr_list[self.curitem]]
+        get_main_frame().service_idx = self._ptr_list[self.curitem]
         self.Dismiss()
         self.ComboCtrl.Navigate()
         get_main_frame().service_del_btn.Disable()

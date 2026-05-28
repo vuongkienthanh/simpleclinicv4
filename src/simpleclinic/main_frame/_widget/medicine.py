@@ -4,16 +4,17 @@ import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
 from lib.db.models import Medicine
+from bisect import bisect_left
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã thuốc", width=-1)
+        self.AppendColumn("Mã", width=-1)
         self.AppendColumn("Thuốc", width=200)
-        self.AppendColumn("Thành phần", width=-1)
-        self.AppendColumn("Cách dùng", width=-1)
+        self.AppendColumn("Thành phần", width=200)
+        self.AppendColumn("Cách dùng", width=-2)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
         self.AppendColumn("Số lượng", width=-1)
@@ -40,10 +41,9 @@ class List(wx.ListCtrl):
 
     def on_medicine_list_select(self, e: wx.ListEvent):
         medicine_id = int(self.GetItemText(e.Index, 1))
-        for i, m in enumerate(get_app().medicine_store):
-            if m["id"] == medicine_id:
-                get_main_frame().medicine = get_app().medicine_store[i]
-                break
+        get_main_frame().medicine_idx = bisect_left(
+            get_app().medicine_store, medicine_id, key=lambda r: r["id"]
+        )
         get_main_frame().medicine_times.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
         get_main_frame().medicine_dose.ChangeValue(self.GetItemText(e.Index, 4))
         get_main_frame().medicine_quantity.ChangeValue(
@@ -53,7 +53,7 @@ class List(wx.ListCtrl):
         get_main_frame().display_usage_note()
 
     def on_medicine_list_deselect(self, _):
-        get_main_frame().medicine = None
+        get_main_frame().medicine_idx = None
 
     def to_model(self) -> Iterable[Medicine]:
         visit_id = get_main_frame().visit_id
@@ -82,8 +82,8 @@ class Popup(wx.ComboPopup):
             parent, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.SIMPLE_BORDER
         )
         self.lc.AppendColumn("Mã", width=-1)
-        self.lc.AppendColumn("Thuốc", width=-1)
-        self.lc.AppendColumn("Thành phần", width=-1)
+        self.lc.AppendColumn("Thuốc", width=150)
+        self.lc.AppendColumn("Thành phần", width=150)
         self.lc.AppendColumn("Số lượng", width=-1)
         self.lc.AppendColumn("Đơn vị", width=-1)
         self.lc.AppendColumn("Đơn giá", width=-1)
@@ -107,7 +107,7 @@ class Popup(wx.ComboPopup):
 
     @override
     def GetAdjustedSize(self, minWidth, prefHeight, maxHeight):
-        return wx.ComboPopup.GetAdjustedSize(self, 600, 200, 400)
+        return wx.ComboPopup.GetAdjustedSize(self, 900, 200, 400)
 
     @override
     def OnPopup(self):
@@ -118,8 +118,11 @@ class Popup(wx.ComboPopup):
         s = s.strip().casefold()
         for i, item in filter(
             lambda elem: (
-                (s in elem[1]["name"].casefold())
-                or (s in elem[1]["element"].casefold())
+                elem[1]["quantity"] > 0
+                and (
+                    (s in elem[1]["name"].casefold())
+                    or (s in elem[1]["element"].casefold())
+                )
             ),
             enumerate(get_app().medicine_store),
         ):
@@ -147,10 +150,9 @@ class Popup(wx.ComboPopup):
             self.select_item()
 
     def select_item(self):
-        get_main_frame().medicine = get_app().medicine_store[
-            self._ptr_list[self.curitem]
-        ]
         self.Dismiss()
+        get_main_frame().medicine_idx = self._ptr_list[self.curitem]
+
         self.ComboCtrl.Navigate()
         get_main_frame().medicine_del_btn.Disable()
 
