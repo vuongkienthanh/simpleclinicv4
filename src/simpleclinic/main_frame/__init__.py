@@ -655,6 +655,7 @@ class MainFrame(wx.Frame):
         self.patient_id = None
         self.patient_edit_mode()
         self.GetSizer().Layout()
+        self.patient_name.SetFocus()
 
     def on_patient_upd_btn(self, _):
         self.patient_edit_mode()
