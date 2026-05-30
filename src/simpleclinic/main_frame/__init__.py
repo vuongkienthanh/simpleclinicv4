@@ -18,7 +18,7 @@ from lib.wx_helper.widget import (
 from lib.db.models import Patient, Visit
 from lib.enums import Gender
 from lib.db import insert, update
-from lib.vn import bd_to_age
+from lib.vn import bd_to_age, wxdatetime_to_vietnamese_datetime
 from ._widget import (
     patient,
     visit,
@@ -74,18 +74,14 @@ class MainFrame(wx.Frame):
         self.visit_box.SetOwnBackgroundColour(
             wx.Colour(*get_app().config["theme"]["visit_info"])
         )
-        self.visit_exam_datetime = wx.TextCtrl(
-            self.visit_box, style=wx.TE_READONLY, size=wx.Size(150, -1)
-        )
-        self.visit_exam_datetime.Disable()
         self.visit_weight = DecimalIntCtrl(self.visit_box)
         self.visit_days = IntCtrl(self.visit_box, min=0, limited=True)
-        self.visit_price = ThousandGroupIntCtrl(self.visit_box)
         self.visit_medical_history = wx.TextCtrl(self.visit_box, style=wx.TE_MULTILINE)
         self.visit_diagnosis = wx.TextCtrl(self.visit_box)
         self.visit_note = wx.TextCtrl(self.visit_box)
+        self.visit_price = ThousandGroupIntCtrl(self.visit_box)
 
-        order_info = wx.Notebook(self)
+        order_info = wx.Notebook(self.visit_box)
         order_info.SetBackgroundColour(
             wx.Colour(*get_app().config["theme"]["order_info"])
         )
@@ -177,15 +173,10 @@ class MainFrame(wx.Frame):
             ]
         )
         row1 = row(
-            static(self.visit_box, "Khám lúc:", 100),
-            (self.visit_exam_datetime, 0, EA, 2),
             static(self.visit_box, "Cân nặng: "),
             (self.visit_weight, 0, EA, 2),
             static(self.visit_box, "Số ngày thuốc: "),
             (self.visit_days, 0, EA, 2),
-            (0, 0, 3),
-            static(self.visit_box, "Giá tiền: "),
-            (self.visit_price, 0, EA, 2),
         )
         row2 = row(
             static(self.visit_box, "Bệnh sử: ", 100),
@@ -195,21 +186,25 @@ class MainFrame(wx.Frame):
             static(self.visit_box, "Chẩn đoán: ", 100),
             (self.visit_diagnosis, 1, EA, 2),
         )
-        row4 = row(
+        row5 = row(
             static(self.visit_box, "Ghi chú: ", 100),
             (self.visit_note, 1, EA, 2),
+            (0, 0, 3),
+            static(self.visit_box, "Giá tiền: "),
+            (self.visit_price, 0, EA, 2),
         )
         visit_info.AddMany(
             [
                 (row1, 0, EA, 5),
                 (row2, 1, EA, 5),
                 (row3, 0, EA, 5),
-                (row4, 0, EA, 5),
+                (order_info, 0, EA, 5),
+                (row5, 0, EA, 5),
             ]
         )
 
         row1 = row(
-            static(medicine_page, "Thuốc: ", 100),
+            static(medicine_page, "Thuốc: ", 95),
             (self.medicine_search, 1, EA, 2),
             static(medicine_page, "Ngày "),
             (self.medicine_times, 0, EA, 2),
@@ -224,7 +219,7 @@ class MainFrame(wx.Frame):
             (self.medicine_del_btn, 0, EA, 2),
         )
         row2 = row(
-            static(medicine_page, "Ghi chú:", 100),
+            static(medicine_page, "Ghi chú:", 95),
             (self.medicine_usage_note, 0, EA, 2),
             (self.medicine_usage_note_txt, 0, wx.ALIGN_CENTER_VERTICAL, 2),
         )
@@ -233,7 +228,7 @@ class MainFrame(wx.Frame):
         )
 
         row1 = row(
-            static(service_page, "Dịch vụ: ", 100),
+            static(service_page, "Dịch vụ: ", 95),
             (self.service_search, 1, EA, 2),
             static(service_page, "Số lượng: "),
             (self.service_quantity, 0, EA, 2),
@@ -250,7 +245,6 @@ class MainFrame(wx.Frame):
         right = column(
             (patient_info, 0, EA, 5),
             (visit_info, 0, EA, 5),
-            (order_info, 1, EA, 5),
             row(
                 (self.visit_new_btn, 0, EA, 5),
                 (self.visit_same_btn, 0, EA, 5),
@@ -398,7 +392,6 @@ class MainFrame(wx.Frame):
         if value is None:
             self._visit_id = None
             self.visit_box.SetLabel("Thông tin lượt khám")
-            self.visit_exam_datetime.ChangeValue("")
             self.visit_weight.SetInt(Decimal())
             self.visit_days.SetValue(
                 get_app().config["process"]["default_days_for_prescription"]
@@ -427,9 +420,10 @@ class MainFrame(wx.Frame):
                 )
                 .fetchone()
             )
-            self.visit_box.SetLabel(f"Thông tin lượt khám: {value}")
-            self.visit_exam_datetime.ChangeValue(
-                visit["exam_datetime"].FormatISOCombined()
+            self.visit_box.SetLabel(
+                "Thông tin lượt khám: ID={} vào {}".format(
+                    value, wxdatetime_to_vietnamese_datetime(visit["exam_datetime"])
+                )
             )
             self.visit_weight.SetInt(Decimal(visit["weight"]) / 10)
             self.visit_days.SetValue(visit["days"])
@@ -768,9 +762,7 @@ class MainFrame(wx.Frame):
             finally:
                 get_app().fetch_medicine_store()
                 self.populate_visit_list()
-                self.visit_exam_datetime.ChangeValue(
-                    wx.DateTime.Today().FormatISOCombined()
-                )
+                self.visit_list.Select(0)
                 self.visit_edit_mode(False)
 
     def on_visit_cancel_btn(self, _):
