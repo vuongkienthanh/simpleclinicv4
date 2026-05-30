@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS medicines (
 CREATE TABLE IF NOT EXISTS service_store (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
-    price INTEGER NOT NULL CHECK (price >= 0),
+    selling_price INTEGER NOT NULL CHECK (selling_price >= 0),
     misc TEXT
 );
 

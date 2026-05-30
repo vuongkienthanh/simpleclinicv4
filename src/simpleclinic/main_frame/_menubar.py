@@ -59,6 +59,8 @@ class MenuBar(wx.MenuBar):
         info.SetCopyright(get_app().VendorDisplayName)
         info.SetIcon(wx.Icon(str(LOGO)))
         info.SetWebSite(get_app().url)
+        info.AddDeveloper(get_app().author)
+        info.AddTranslator(get_app().author)
         wx.adv.AboutBox(info)
 
     def on_print(self, _):
@@ -87,9 +89,10 @@ Tiền khám: {}
                 get_main_frame().visit_days.Value,
                 "\n".join(
                     [
-                        "{}/ {} {} x {} = {} {}".format(
+                        "{}/ {} {} ngày {} lần x {} = {} {}".format(
                             i + 1,
                             get_main_frame().medicine_list.GetItemText(i, 2),
+                            get_main_frame().medicine_list.GetItemText(i, 4),
                             get_main_frame().medicine_list.GetItemText(i, 5),
                             get_main_frame().medicine_list.GetItemText(i, 6),
                             get_main_frame().medicine_list.GetItemText(i, 7),

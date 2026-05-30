@@ -70,32 +70,34 @@ def _duplicate_medicine_rows(doc: document.Document, count: int):
 
 
 def fill_main_frame_data():
-    d = Document(str(PRESCRIPTION_TEMPLATE))
-    _duplicate_medicine_rows(d, get_main_frame().medicine_list.ItemCount)
-    date = wx.DateTime()
-    date.ParseISOCombined(get_main_frame().visit_exam_datetime.Value)
-    data = {
-        "name": get_main_frame().patient_name.Value,
-        "gender": get_main_frame().patient_gender.GetGender().display_name,
-        "birthdate": get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT),
-        "weight": str(get_main_frame().visit_weight.GetInt()),
-        "diagnosis": get_main_frame().visit_diagnosis.Value.strip(),
-        "days": str(get_main_frame().visit_days.Value),
-        "note": get_main_frame().visit_note.Value.strip(),
-        "date": wxdatetime_to_vietnamese_date(date),
-    }
-    for i in range(get_main_frame().medicine_list.ItemCount):
-        data |= {
-            f"STT{i}": str(i + 1),
-            f"mname{i}": get_main_frame().medicine_list.GetItemText(i, 2),
-            f"element{i}": get_main_frame().medicine_list.GetItemText(i, 3),
-            f"quantity{i}": get_main_frame().medicine_list.GetItemText(i, 6),
-            f"usage{i}": "{} ngày {}, lần {} {}".format(
-                get_main_frame().medicine_list.GetItemText(i, 4),
-                get_main_frame().medicine_list.GetItemText(i, 5),
-                get_main_frame().medicine_list.GetItemText(i, 6),
-                get_main_frame().medicine_list.GetItemText(i, 8),
-            ),
+    if get_main_frame().visit_id is not None:
+        d = Document(str(PRESCRIPTION_TEMPLATE))
+        _duplicate_medicine_rows(d, get_main_frame().medicine_list.ItemCount)
+        date = wx.DateTime()
+        date.ParseFormat(get_main_frame().visit_box.Label.split(" ")[7], DATE_FORMAT)
+        data = {
+            "name": get_main_frame().patient_name.Value,
+            "gender": get_main_frame().patient_gender.GetGender().display_name,
+            "birthdate": get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT),
+            "age": get_main_frame().patient_age.Value,
+            "weight": str(get_main_frame().visit_weight.GetInt()),
+            "diagnosis": get_main_frame().visit_diagnosis.Value.strip(),
+            "days": str(get_main_frame().visit_days.Value),
+            "note": get_main_frame().visit_note.Value.strip(),
+            "date": wxdatetime_to_vietnamese_date(date),
         }
-    docx_replace(d, **data)
-    d.save(str(PRESCRIPTION_OUTPUT))
+        for i in range(get_main_frame().medicine_list.ItemCount):
+            data |= {
+                f"STT{i}": str(i + 1),
+                f"mname{i}": get_main_frame().medicine_list.GetItemText(i, 2),
+                f"element{i}": get_main_frame().medicine_list.GetItemText(i, 3),
+                f"quantity{i}": get_main_frame().medicine_list.GetItemText(i, 6),
+                f"usage{i}": "{} ngày {}, lần {} {}".format(
+                    get_main_frame().medicine_list.GetItemText(i, 4),
+                    get_main_frame().medicine_list.GetItemText(i, 5),
+                    get_main_frame().medicine_list.GetItemText(i, 6),
+                    get_main_frame().medicine_list.GetItemText(i, 8),
+                ),
+            }
+        docx_replace(d, **data)
+        d.save(str(PRESCRIPTION_OUTPUT))

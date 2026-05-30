@@ -52,7 +52,7 @@ class MedicineStore(BASEMODEL):
 @final
 @dataclass(slots=True, frozen=True)
 class Medicine(BASEMODEL):
-    __tablename__ = "medicine"
+    __tablename__ = "medicines"
     medicine_id: int
     visit_id: int
     times: int
@@ -66,7 +66,7 @@ class Medicine(BASEMODEL):
 class ServiceStore(BASEMODEL):
     __tablename__ = "service_store"
     name: str
-    price: int
+    selling_price: int
 
 
 @final

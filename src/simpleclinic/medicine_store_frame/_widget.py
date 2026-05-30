@@ -6,8 +6,8 @@ class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
         self.AppendColumn("Mã", width=-1)
-        self.AppendColumn("Tên", width=-1)
-        self.AppendColumn("Thành phần", width=-1)
+        self.AppendColumn("Tên", width=300)
+        self.AppendColumn("Thành phần", width=300)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Đường dùng", width=-1)
         self.AppendColumn("Đơn vị dùng", width=-1)
@@ -24,7 +24,7 @@ class List(wx.ListCtrl):
                 str(item["quantity"]),
                 item["route"],
                 item["usage_unit"],
-                item["sale_unit"],
+                item["selling_unit"],
                 item["cost_price"],
                 item["selling_price"],
             ]

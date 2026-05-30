@@ -4,7 +4,6 @@ import sqlite3
 from typing import override
 from lib.wx_helper import get_app, get_main_frame
 from lib.db.models import Medicine
-from bisect import bisect_left
 
 
 class List(wx.ListCtrl):
@@ -39,21 +38,11 @@ class List(wx.ListCtrl):
             ]
         )
 
-    def on_medicine_list_select(self, e: wx.ListEvent):
-        medicine_id = int(self.GetItemText(e.Index, 1))
-        get_main_frame().medicine_idx = bisect_left(
-            get_app().medicine_store, medicine_id, key=lambda r: r["id"]
-        )
-        get_main_frame().medicine_times.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
-        get_main_frame().medicine_dose.ChangeValue(self.GetItemText(e.Index, 4))
-        get_main_frame().medicine_quantity.ChangeValue(
-            int(self.GetItemText(e.Index, 5))  # pyright: ignore[reportArgumentType]
-        )
-        get_main_frame().medicine_usage_note.ChangeValue(self.GetItemText(e.Index, 6))
-        get_main_frame().display_usage_note()
+    def on_medicine_list_select(self, _):
+        get_main_frame().medicine_del_btn.Enable()
 
     def on_medicine_list_deselect(self, _):
-        get_main_frame().medicine_idx = None
+        get_main_frame().medicine_del_btn.Disable()
 
     def to_model(self) -> Iterable[Medicine]:
         visit_id = get_main_frame().visit_id
@@ -107,7 +96,7 @@ class Popup(wx.ComboPopup):
 
     @override
     def GetAdjustedSize(self, minWidth, prefHeight, maxHeight):
-        return wx.ComboPopup.GetAdjustedSize(self, 900, 200, 400)
+        return wx.ComboPopup.GetAdjustedSize(self, 750, 200, 400)
 
     @override
     def OnPopup(self):
@@ -152,9 +141,7 @@ class Popup(wx.ComboPopup):
     def select_item(self):
         self.Dismiss()
         get_main_frame().medicine_idx = self._ptr_list[self.curitem]
-
         self.ComboCtrl.Navigate()
-        get_main_frame().medicine_del_btn.Disable()
 
     def on_char(self, e: wx.KeyEvent):
         c = e.KeyCode

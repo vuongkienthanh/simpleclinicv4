@@ -1,3 +1,5 @@
+from concurrent.interpreters import get_main
+
 import wx
 import sqlite3
 from lib import DATE_FORMAT

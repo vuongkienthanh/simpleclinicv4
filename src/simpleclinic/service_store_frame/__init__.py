@@ -10,7 +10,6 @@ from lib.db.models import ServiceStore
 class StoreFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title="Dịch vụ")
-        self.Maximize()
         self.searchctrl = wx.SearchCtrl(self)
         self.listctrl = List(self)
         self.add_btn = wx.Button(self, label="Thêm mới")
@@ -96,7 +95,7 @@ class StoreFrame(wx.Frame):
             self,
             id=int(self.listctrl.GetItemText(item, 0)),
             name=self.listctrl.GetItemText(item, 1),
-            price=self.listctrl.GetItemText(item, 2),
+            selling_price=int(self.listctrl.GetItemText(item, 2)),
         ).ShowModal()
         self.refresh()
 

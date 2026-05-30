@@ -4,7 +4,6 @@ import sqlite3
 from typing import override
 from lib.db.models import Service
 from lib.wx_helper import get_app, get_main_frame
-from bisect import bisect_left
 
 
 class List(wx.ListCtrl):
@@ -25,19 +24,15 @@ class List(wx.ListCtrl):
                 item["id"],
                 item["name"],
                 str(item["quantity"]),
-                str(item["price"] * item["quantity"]),
+                str(item["selling_price"] * item["quantity"]),
             ]
         )
 
-    def on_service_list_select(self, e: wx.ListEvent):
-        service_id = int(self.GetItemText(e.Index, 1))
-        get_main_frame().service_idx = bisect_left(
-            get_app().service_store, service_id, key=lambda r: r["id"]
-        )
-        get_main_frame().service_quantity.ChangeValue(int(self.GetItemText(e.Index, 3)))  # pyright: ignore[reportArgumentType]
+    def on_service_list_select(self, _):
+        get_main_frame().service_del_btn.Enable()
 
     def on_service_list_deselect(self, _):
-        get_main_frame().service_idx = None
+        get_main_frame().service_del_btn.Disable()
 
     def to_model(self) -> Iterable[Service]:
         visit_id = get_main_frame().visit_id
@@ -63,7 +58,7 @@ class Popup(wx.ComboPopup):
             parent, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.SIMPLE_BORDER
         )
         self.lc.AppendColumn("Mã", width=-1)
-        self.lc.AppendColumn("Dịch vụ", width=-1)
+        self.lc.AppendColumn("Dịch vụ", width=150)
         self.lc.AppendColumn("Đơn giá", width=-1)
         self.lc.Bind(wx.EVT_MOTION, self.on_motion)
         self.lc.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
@@ -101,7 +96,7 @@ class Popup(wx.ComboPopup):
                 [
                     item["id"],
                     item["name"],
-                    item["price"],
+                    item["selling_price"],
                 ]
             )
             self._ptr_list.append(i)
@@ -120,7 +115,6 @@ class Popup(wx.ComboPopup):
         get_main_frame().service_idx = self._ptr_list[self.curitem]
         self.Dismiss()
         self.ComboCtrl.Navigate()
-        get_main_frame().service_del_btn.Disable()
 
     def on_char(self, e: wx.KeyEvent):
         c = e.KeyCode

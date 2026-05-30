@@ -33,6 +33,7 @@ class App(wx.App):
             self.SetVendorDisplayName(data["project"]["authors"][0]["email"])
             self.version = data["project"]["version"]
             self.description = data["project"]["description"]
+            self.author = data["project"]["authors"][0]["name"]
             self.url = data["project"]["urls"]["repository"]
 
         self.config = get_config()
@@ -88,7 +89,7 @@ class App(wx.App):
 
     def fetch_service_store(self):
         self.service_store = self.conn.execute("""
-            SELECT id, name, price
+            SELECT id, name, selling_price
             FROM service_store
         """).fetchall()
 

@@ -10,7 +10,6 @@ from ._widget import List
 class StoreFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title="Kho thuốc")
-        self.Maximize()
         self.searchctrl = wx.SearchCtrl(self)
         self.searchctrl.SetHint("Tên thuốc hoặc thành phần thuốc")
         self.listctrl = List(self)
@@ -98,12 +97,12 @@ class StoreFrame(wx.Frame):
             id=int(self.listctrl.GetItemText(item, 0)),
             name=self.listctrl.GetItemText(item, 1),
             element=self.listctrl.GetItemText(item, 2),
-            quantity=self.listctrl.GetItemText(item, 3),
+            quantity=int(self.listctrl.GetItemText(item, 3)),
             route=self.listctrl.GetItemText(item, 4),
             usage_unit=self.listctrl.GetItemText(item, 5),
             selling_unit=self.listctrl.GetItemText(item, 6),
-            cost_price=self.listctrl.GetItemText(item, 7),
-            selling_price=self.listctrl.GetItemText(item, 8),
+            cost_price=int(self.listctrl.GetItemText(item, 7)),
+            selling_price=int(self.listctrl.GetItemText(item, 8)),
         ).ShowModal()
         self.refresh()
 
