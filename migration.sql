@@ -15,7 +15,7 @@ UPDATE simpleclinic.visits SET exam_datetime = strftime('%FT%T', DATETIME(exam_d
 INSERT OR REPLACE INTO simpleclinic.medicine_store (id, name, element, quantity, route, usage_unit, selling_unit, cost_price, selling_price)
 SELECT id, name, element, quantity, usage, usage_unit, IFNULL(sale_unit, usage_unit), purchase_price, IFNULL(sale_price, purchase_price) FROM warehouse;
 
-INSERT OR REPLACE INTO simpleclinic.service_store (id, name, price)
+INSERT OR REPLACE INTO simpleclinic.service_store (id, name, selling_price)
 SELECT id, name, price FROM procedures;
 
 INSERT OR REPLACE INTO simpleclinic.medicines(medicine_id, visit_id, times, dose,quantity, usage_note)

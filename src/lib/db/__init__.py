@@ -13,7 +13,7 @@ custom_type_gender()
 
 
 def connect(path: Path) -> Connection:
-    conn = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
+    conn = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES, autocommit=True)
     conn.row_factory = sqlite3.Row
     return conn
 
