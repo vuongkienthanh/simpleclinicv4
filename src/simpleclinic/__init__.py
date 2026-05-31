@@ -93,12 +93,9 @@ class App(wx.App):
             FROM service_store
         """).fetchall()
 
-    def fetch_stable_data(self):
+    def refresh(self):
         self.fetch_medicine_store()
         self.fetch_service_store()
-
-    def refresh(self):
-        self.fetch_stable_data()
         get_main_frame().refresh()
 
 

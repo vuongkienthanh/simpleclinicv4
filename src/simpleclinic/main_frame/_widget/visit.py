@@ -11,7 +11,7 @@ class List(wx.ListCtrl):
         self.AppendColumn("Ngày giờ khám", width=200)
         self.AppendColumn("Chẩn đoán", width=250)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
+        self.Bind(wx.EVT_LEFT_DOWN, self.on_left_click)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -25,8 +25,15 @@ class List(wx.ListCtrl):
     def on_select(self, e: wx.ListEvent):
         get_main_frame().visit_id = int(self.GetItemText(e.Index, 0))
 
-    def on_deselect(self, _):
-        get_main_frame().visit_id = None
+    def on_left_click(self, e: wx.MouseEvent):
+        pos = e.GetPosition()
+        index, _ = self.HitTest(pos)
+        if index == wx.NOT_FOUND:
+            current_selected = self.GetFirstSelected()
+            if current_selected != -1:
+                self.Select(current_selected, on=False)
+            get_main_frame().visit_id = None
+        e.Skip()
 
     def query(self, patient_id: int):
         self.DeleteAllItems()
