@@ -99,10 +99,10 @@ class MainFrame(wx.Frame):
             medicine_page, min=0, limited=True, style=wx.TE_PROCESS_ENTER
         )
         self.medicine_selling_unit = wx.StaticText(medicine_page, label="{đơn vị}")
-        self.medicine_usage_note = wx.TextCtrl(
+        self.medicine_note = wx.TextCtrl(
             medicine_page, size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER
         )
-        self.medicine_full_usage_note = wx.StaticText(
+        self.medicine_full_note = wx.StaticText(
             medicine_page, label="", size=wx.Size(500, -1)
         )
         self.medicine_add_btn = wx.BitmapButton(
@@ -224,8 +224,8 @@ class MainFrame(wx.Frame):
         )
         row2 = row(
             static(medicine_page, "Ghi chú:", 95),
-            (self.medicine_usage_note, 0, EA, 2),
-            (self.medicine_full_usage_note, 0, wx.ALIGN_CENTER_VERTICAL, 2),
+            (self.medicine_note, 0, EA, 2),
+            (self.medicine_full_note, 0, wx.ALIGN_CENTER_VERTICAL, 2),
         )
         medicine_page.SetSizer(
             column((row1, 0, EA, 5), (row2, 0, EA, 5), (self.medicine_list, 1, EA, 5))
@@ -296,19 +296,19 @@ class MainFrame(wx.Frame):
         self.medicine_times.Bind(
             wx.EVT_TEXT,
             lambda _: (
-                self.change_medicine_full_usage_note(),
+                self.change_medicine_full_note(),
                 self.change_medicine_quatity(),
             ),
         )
         self.medicine_dose.Bind(
             wx.EVT_TEXT,
             lambda _: (
-                self.change_medicine_full_usage_note(),
+                self.change_medicine_full_note(),
                 self.change_medicine_quatity(),
             ),
         )
-        self.medicine_usage_note.Bind(
-            wx.EVT_TEXT, lambda _: self.change_medicine_full_usage_note()
+        self.medicine_note.Bind(
+            wx.EVT_TEXT, lambda _: self.change_medicine_full_note()
         )
 
         # visits_days
@@ -316,7 +316,7 @@ class MainFrame(wx.Frame):
 
         # list buttons
         self.medicine_quantity.Bind(wx.EVT_TEXT_ENTER, self.on_medicine_add_btn)
-        self.medicine_usage_note.Bind(wx.EVT_TEXT_ENTER, self.on_medicine_add_btn)
+        self.medicine_note.Bind(wx.EVT_TEXT_ENTER, self.on_medicine_add_btn)
         self.medicine_add_btn.Bind(wx.EVT_BUTTON, self.on_medicine_add_btn)
         self.medicine_del_btn.Bind(wx.EVT_BUTTON, self.on_medicine_del_btn)
         self.service_add_btn.Bind(wx.EVT_BUTTON, self.on_service_add_btn)
@@ -460,9 +460,9 @@ class MainFrame(wx.Frame):
             self.medicine_dose.Disable()
             self.medicine_quantity.ChangeValue(0)  # pyright: ignore[reportArgumentType]
             self.medicine_quantity.Disable()
-            self.medicine_usage_note.ChangeValue("")
-            self.medicine_full_usage_note.SetLabel("")
-            self.medicine_usage_note.Disable()
+            self.medicine_note.ChangeValue("")
+            self.medicine_full_note.SetLabel("")
+            self.medicine_note.Disable()
             self.medicine_add_btn.Disable()
         else:
             self._medicine_idx = value
@@ -473,7 +473,7 @@ class MainFrame(wx.Frame):
             self.medicine_times.Enable()
             self.medicine_dose.Enable()
             self.medicine_quantity.Enable()
-            self.medicine_usage_note.Enable()
+            self.medicine_note.Enable()
             self.medicine_add_btn.Enable()
 
     @property
@@ -540,7 +540,7 @@ class MainFrame(wx.Frame):
                 str(self.medicine_times.Value),
                 f"{self.medicine_dose.Value.strip()} {m['usage_unit']}",
                 f"{self.medicine_quantity.Value} {m['selling_unit']}",
-                self.medicine_usage_note.Value.strip(),
+                self.medicine_note.Value.strip(),
                 str(m["selling_price"]),
                 str(m["selling_price"] * self.medicine_quantity.Value),
             ]
@@ -726,20 +726,20 @@ class MainFrame(wx.Frame):
         self.change_medicine_quatity()
         self.change_visit_price()
 
-    def change_medicine_full_usage_note(self):
+    def change_medicine_full_note(self):
         if (
             self.medicine_idx is not None
             and self.medicine_times.Value != ""
             and self.medicine_dose.Value != ""
         ):
             m = get_app().medicine_store[self.medicine_idx]
-            self.medicine_full_usage_note.SetLabel(
+            self.medicine_full_note.SetLabel(
                 "{} ngày {} lần, lần {} {} ({})".format(
                     m["route"],
                     int(self.medicine_times.Value),
                     self.medicine_dose.Value.strip(),
                     m["usage_unit"],
-                    self.medicine_usage_note.Value.strip(),
+                    self.medicine_note.Value.strip(),
                 )
             )
 

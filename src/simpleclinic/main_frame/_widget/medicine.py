@@ -34,7 +34,7 @@ class List(wx.ListCtrl):
                 str(item["times"]),
                 f"{item['dose']} {item['usage_unit']}",
                 f"{item['quantity']} {item['selling_unit']}",
-                item["usage_note"],
+                item["note"],
                 str(item["selling_price"]),
                 str(item["selling_price"] * item["quantity"]),
             ]
@@ -52,8 +52,8 @@ class List(wx.ListCtrl):
             get_app()
             .conn.execute(
                 """
-                SELECT s.id, s.name, s.element, s.route, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
-                FROM (SELECT medicine_id, times, dose, quantity, usage_note FROM medicines WHERE visit_id=?) AS m
+                SELECT s.id, s.name, s.element, s.route, m.times, m.dose, m.quantity, m.note, s.selling_unit, s.selling_price, s.usage_unit 
+                FROM (SELECT medicine_id, times, dose, quantity, note FROM medicines WHERE visit_id=?) AS m
                 JOIN (SELECT id, name, element, route, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
                 WHERE s.id = m.medicine_id
                 """,
@@ -73,7 +73,7 @@ class List(wx.ListCtrl):
                 times=int(self.GetItemText(i, 5)),
                 dose=self.GetItemText(i, 6).split(" ", 1)[0],
                 quantity=int(self.GetItemText(i, 7).split(" ", 1)[0]),
-                usage_note=self.GetItemText(i, 8),
+                note=self.GetItemText(i, 8),
             )
 
 

@@ -58,7 +58,7 @@ class Medicine(BASEMODEL):
     times: int
     dose: str
     quantity: int
-    usage_note: str
+    note: str
 
 
 @final

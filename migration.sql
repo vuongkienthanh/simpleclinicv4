@@ -18,7 +18,7 @@ SELECT id, name, element, quantity, usage, usage_unit, IFNULL(sale_unit, usage_u
 INSERT OR REPLACE INTO simpleclinic.service_store (id, name, selling_price)
 SELECT id, name, price FROM procedures;
 
-INSERT OR REPLACE INTO simpleclinic.medicines(medicine_id, visit_id, times, dose,quantity, usage_note)
+INSERT OR REPLACE INTO simpleclinic.medicines(medicine_id, visit_id, times, dose,quantity, note)
 SELECT warehouse_id, visit_id, times, dose, quantity, IFNULL(usage_note, '') from linedrugs AS LD
 JOIN simpleclinic.visits AS v
 WHERE v.id = LD.visit_id;

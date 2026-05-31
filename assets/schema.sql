@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS medicines (
     times INTEGER NOT NULL CHECK (times > 0),
     dose TEXT NOT NULL CHECK (dose <> ''),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
-    usage_note TEXT NOT NULL,
+    note TEXT NOT NULL,
     misc TEXT,
     PRIMARY KEY (medicine_id, visit_id),
     FOREIGN KEY (visit_id) REFERENCES visits (id)
