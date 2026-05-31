@@ -1,9 +1,7 @@
-from concurrent.interpreters import get_main
-
 import wx
 import sqlite3
 from lib import DATE_FORMAT
-from lib.wx_helper import get_main_frame
+from lib.wx_helper import get_main_frame, get_app
 
 
 class List(wx.ListCtrl):
@@ -65,3 +63,4 @@ class FollowUp(List):
         self.DeleteAllItems()
         for item in get_app().conn.execute("SELECT * FROM follow_up"):
             self.append(item)
+

@@ -9,16 +9,17 @@ from lib.db.models import Medicine
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("STT", width=-1)
-        self.AppendColumn("Mã", width=-1)
-        self.AppendColumn("Thuốc", width=200)
-        self.AppendColumn("Thành phần", width=200)
+        self.AppendColumn("STT", width=-2)
+        self.AppendColumn("Mã", width=-2)
+        self.AppendColumn("Thuốc", width=180)
+        self.AppendColumn("Thành phần", width=180)
         self.AppendColumn("Cách dùng", width=-2)
         self.AppendColumn("Số Lần", width=-1)
         self.AppendColumn("Mỗi lần", width=-1)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Ghi chú", width=-1)
-        self.AppendColumn("Giá", width=-1)
+        self.AppendColumn("Đơn giá", width=-1)
+        self.AppendColumn("Thành giá", width=-1)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
@@ -34,6 +35,7 @@ class List(wx.ListCtrl):
                 f"{item['dose']} {item['usage_unit']}",
                 f"{item['quantity']} {item['selling_unit']}",
                 item["usage_note"],
+                str(item["selling_price"]),
                 str(item["selling_price"] * item["quantity"]),
             ]
         )
@@ -43,7 +45,7 @@ class List(wx.ListCtrl):
 
     def on_deselect(self, _):
         get_main_frame().medicine_del_btn.Disable()
-    
+
     def query(self, visit_id: int):
         self.DeleteAllItems()
         for item in (

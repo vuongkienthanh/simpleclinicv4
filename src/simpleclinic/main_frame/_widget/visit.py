@@ -1,7 +1,7 @@
 import wx
 import sqlite3
 from lib.vn import wxdatetime_to_vietnamese_datetime
-from lib.wx_helper import get_main_frame
+from lib.wx_helper import get_main_frame, get_app
 
 
 class List(wx.ListCtrl):

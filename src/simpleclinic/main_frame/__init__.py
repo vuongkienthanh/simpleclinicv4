@@ -115,7 +115,7 @@ class MainFrame(wx.Frame):
 
         service_page = wx.Panel(order_info)
         self.service_search = service.Picker(service_page)
-        self.service_quantity = IntCtrl(service_page, min=0, limited=True)
+        self.service_quantity = IntCtrl(service_page, value=1, min=1, limited=True)
         self.service_add_btn = wx.BitmapButton(
             service_page, bitmap=wx.BitmapBundle(wx.Bitmap(str(PLUS_BM)))
         )
@@ -295,13 +295,21 @@ class MainFrame(wx.Frame):
 
         self.medicine_times.Bind(
             wx.EVT_TEXT,
-            lambda _: (self.change_medicine_full_usage_note(), self.change_medicine_quatity()),
+            lambda _: (
+                self.change_medicine_full_usage_note(),
+                self.change_medicine_quatity(),
+            ),
         )
         self.medicine_dose.Bind(
             wx.EVT_TEXT,
-            lambda _: (self.change_medicine_full_usage_note(), self.change_medicine_quatity()),
+            lambda _: (
+                self.change_medicine_full_usage_note(),
+                self.change_medicine_quatity(),
+            ),
         )
-        self.medicine_usage_note.Bind(wx.EVT_TEXT, lambda _: self.change_medicine_full_usage_note())
+        self.medicine_usage_note.Bind(
+            wx.EVT_TEXT, lambda _: self.change_medicine_full_usage_note()
+        )
 
         # visits_days
         self.visit_days.Bind(wx.EVT_SPINCTRL, self.on_visit_days_spin)
@@ -477,7 +485,7 @@ class MainFrame(wx.Frame):
         if value is None:
             self._service_idx = None
             self.service_search.ChangeValue("")
-            self.service_quantity.ChangeValue(0)  # pyright: ignore[reportArgumentType]
+            self.service_quantity.ChangeValue(1)  # pyright: ignore[reportArgumentType]
             self.service_quantity.Disable()
             self.service_add_btn.Disable()
         else:
@@ -517,7 +525,7 @@ class MainFrame(wx.Frame):
         self.follow_up.query()
         self.visit_list.DeleteAllItems()
         self.GetSizer().Layout()
-        self.patient_search.SetFocus()    
+        self.patient_search.SetFocus()
 
     def on_medicine_add_btn(self, _):
         assert self.medicine_idx is not None
@@ -533,6 +541,7 @@ class MainFrame(wx.Frame):
                 f"{self.medicine_dose.Value.strip()} {m['usage_unit']}",
                 f"{self.medicine_quantity.Value} {m['selling_unit']}",
                 self.medicine_usage_note.Value.strip(),
+                str(m["selling_price"]),
                 str(m["selling_price"] * self.medicine_quantity.Value),
             ]
         )
@@ -558,7 +567,8 @@ class MainFrame(wx.Frame):
                 s["id"],
                 s["name"],
                 str(self.service_quantity.Value),
-                str(s["price"] * self.service_quantity.Value),
+                str(s["selling_price"]),
+                str(s["selling_price"] * self.service_quantity.Value),
             ]
         )
         self.service_idx = None
@@ -689,21 +699,18 @@ class MainFrame(wx.Frame):
         self.visit_id = self.visit_id
         self.GetSizer().Layout()
 
-    def on_visit_days_spin(self, _):
-        days = int(self.visit_days.Value)
-
+    def on_visit_days_spin(self, e):
         for i in range(self.medicine_list.ItemCount):
             times = int(self.medicine_list.GetItemText(i, 5))
             dose, usage_unit = self.medicine_list.GetItemText(i, 6).split(" ", 1)
-            quantity, selling_unit = self.medicine_list.GetItemText(i, 7).split(" ", 1)
-            quantity = int(quantity)
-            selling_price = int(int(self.medicine_list.GetItemText(i, 9)) / quantity)
+            _, selling_unit = self.medicine_list.GetItemText(i, 7).split(" ", 1)
+            selling_price = int(self.medicine_list.GetItemText(i, 9))
 
             if selling_unit != usage_unit:
                 continue
 
             new_quantity = calculate_medicine_quantity(
-                times, dose, usage_unit, selling_unit, days
+                times, dose, usage_unit, selling_unit, e.Position
             )
             self.medicine_list.SetItem(
                 i,
@@ -712,7 +719,7 @@ class MainFrame(wx.Frame):
             )
             self.medicine_list.SetItem(
                 i,
-                9,
+                10,
                 str(selling_price * new_quantity),
             )
 
@@ -757,11 +764,11 @@ class MainFrame(wx.Frame):
         self.visit_price.SetInt(
             get_app().config["process"]["price"]
             + sum(
-                int(self.medicine_list.GetItemText(i, 9))
+                int(self.medicine_list.GetItemText(i, 10))
                 for i in range(self.medicine_list.ItemCount)
             )
             + sum(
-                int(self.service_list.GetItemText(i, 4))
+                int(self.service_list.GetItemText(i, 5))
                 for i in range(self.service_list.ItemCount)
             )
         )

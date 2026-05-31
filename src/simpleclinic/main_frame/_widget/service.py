@@ -13,7 +13,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Mã DV", width=-1)
         self.AppendColumn("Dịch vụ", width=200)
         self.AppendColumn("Số lượng", width=-1)
-        self.AppendColumn("Giá", width=-1)
+        self.AppendColumn("Đơn giá", width=-1)
+        self.AppendColumn("Thành giá", width=-1)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
@@ -24,6 +25,7 @@ class List(wx.ListCtrl):
                 item["id"],
                 item["name"],
                 str(item["quantity"]),
+                str(item["selling_price"]),
                 str(item["selling_price"] * item["quantity"]),
             ]
         )
