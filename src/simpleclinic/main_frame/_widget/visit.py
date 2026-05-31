@@ -10,8 +10,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Mã lượt khám", width=-1)
         self.AppendColumn("Ngày giờ khám", width=200)
         self.AppendColumn("Chẩn đoán", width=250)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_visit_select)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_visit_deselect)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -22,8 +22,23 @@ class List(wx.ListCtrl):
             ]
         )
 
-    def on_visit_select(self, e: wx.ListEvent):
+    def on_select(self, e: wx.ListEvent):
         get_main_frame().visit_id = int(self.GetItemText(e.Index, 0))
 
-    def on_visit_deselect(self, _):
+    def on_deselect(self, _):
         get_main_frame().visit_id = None
+
+    def query(self, patient_id: int):
+        self.DeleteAllItems()
+        for item in (
+            get_app()
+            .conn.execute(
+                """
+                    SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
+                    ORDER BY id DESC
+                    """,
+                (patient_id,),
+            )
+            .fetchall()
+        ):
+            self.append(item)

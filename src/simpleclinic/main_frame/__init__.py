@@ -1,5 +1,7 @@
 from decimal import Decimal
 import sqlite3
+from math import ceil
+from fractions import Fraction
 import wx
 import wx.adv
 from wx.lib.intctrl import IntCtrl
@@ -24,7 +26,6 @@ from ._widget import (
     service,
 )
 from ._menubar import MenuBar
-from ._calculate import calculate_medicine_quantity, calculate_full_usage_note
 
 
 class MainFrame(wx.Frame):
@@ -40,11 +41,11 @@ class MainFrame(wx.Frame):
         self.patient_search = wx.SearchCtrl(self)
         self.patient_search.SetHint("Ctrl + o")
         patient_book = wx.Notebook(self)
-        self.queue = patient.List(patient_book)
-        self.seentoday = patient.List(patient_book)
-        self.follow_up = patient.List(patient_book)
+        self.queue = patient.Queue(patient_book)
+        self.seen_today = patient.SeenToday(patient_book)
+        self.follow_up = patient.FollowUp(patient_book)
         patient_book.AddPage(page=self.queue, text="Danh sách BN", select=True)
-        patient_book.AddPage(page=self.seentoday, text="Đã khám hôm nay")
+        patient_book.AddPage(page=self.seen_today, text="Đã khám hôm nay")
         patient_book.AddPage(page=self.follow_up, text="Tái khám")
         self.visit_list = visit.List(self)
         patient_info = wx.StaticBoxSizer(wx.VERTICAL, self, label="Thông tin bệnh nhân")
@@ -289,18 +290,18 @@ class MainFrame(wx.Frame):
 
         # others
         self.patient_search.Bind(
-            wx.EVT_SEARCH, lambda e: self.populate_queue(e.String.strip().upper())
+            wx.EVT_SEARCH, lambda e: self.queue.query(e.String.strip().upper())
         )
 
         self.medicine_times.Bind(
             wx.EVT_TEXT,
-            lambda _: (self.display_usage_note(), self.calculate_medicine_quatity()),
+            lambda _: (self.change_medicine_full_usage_note(), self.change_medicine_quatity()),
         )
         self.medicine_dose.Bind(
             wx.EVT_TEXT,
-            lambda _: (self.display_usage_note(), self.calculate_medicine_quatity()),
+            lambda _: (self.change_medicine_full_usage_note(), self.change_medicine_quatity()),
         )
-        self.medicine_usage_note.Bind(wx.EVT_TEXT, lambda _: self.display_usage_note())
+        self.medicine_usage_note.Bind(wx.EVT_TEXT, lambda _: self.change_medicine_full_usage_note())
 
         # visits_days
         self.visit_days.Bind(wx.EVT_SPINCTRL, self.on_visit_days_spin)
@@ -374,19 +375,7 @@ class MainFrame(wx.Frame):
                 self.patient_age.ChangeValue(bd_to_age(patient["birthdate"]))
                 self.patient_past_history.SetValue(patient["past_history"])
                 self.patient_upd_btn.Enable()
-                for item in (
-                    get_app()
-                    .conn.execute(
-                        """
-                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
-                        ORDER BY id DESC
-                        """,
-                        (value,),
-                    )
-                    .fetchall()
-                ):
-                    self.visit_list.append(item)
-
+                self.visit_list.query(value)
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
 
@@ -443,36 +432,8 @@ class MainFrame(wx.Frame):
             self.visit_note.ChangeValue(visit["note"])
             self.visit_same_btn.Enable()
             self.visit_upd_btn.Enable()
-            self.medicine_list.DeleteAllItems()
-            for item in (
-                get_app()
-                .conn.execute(
-                    """
-                    SELECT s.id, s.name, s.element, s.route, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
-                    FROM (SELECT medicine_id, times, dose, quantity, usage_note FROM medicines WHERE visit_id=?) AS m
-                    JOIN (SELECT id, name, element, route, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
-                    WHERE s.id = m.medicine_id
-                    """,
-                    (value,),
-                )
-                .fetchall()
-            ):
-                self.medicine_list.append(item)
-            self.service_list.DeleteAllItems()
-            for item in (
-                get_app()
-                .conn.execute(
-                    """
-                    SELECT s.id, s.name, m.quantity, s.selling_price
-                    FROM (SELECT service_id, quantity FROM services WHERE visit_id=?) AS m
-                    JOIN (SELECT id, name, selling_price FROM service_store) AS s
-                    WHERE s.id = m.service_id
-                    """,
-                    (value,),
-                )
-                .fetchall()
-            ):
-                self.service_list.append(item)
+            self.medicine_list.query(value)
+            self.service_list.query(value)
 
     @property
     def medicine_idx(self) -> int | None:
@@ -552,48 +513,11 @@ class MainFrame(wx.Frame):
     def refresh(self):
         self.patient_id = None
         self.queue.DeleteAllItems()
-        self.populate_seentoday()
-        self.populate_follow_up()
+        self.seen_today.query()
+        self.follow_up.query()
         self.visit_list.DeleteAllItems()
         self.GetSizer().Layout()
-        self.patient_search.SetFocus()
-
-    def populate_queue(self, value: str = ""):
-        self.queue.DeleteAllItems()
-        for item in get_app().conn.execute(
-            """
-            SELECT id, name, gender, birthdate from patients
-            WHERE name LIKE ?
-            """,
-            ("%" + value.upper() + "%",),
-        ):
-            self.queue.append(item)
-
-    def populate_seentoday(self):
-        self.seentoday.DeleteAllItems()
-        for item in get_app().conn.execute("SELECT * FROM seentoday"):
-            self.seentoday.append(item)
-
-    def populate_follow_up(self):
-        self.follow_up.DeleteAllItems()
-        for item in get_app().conn.execute("SELECT * FROM follow_up"):
-            self.follow_up.append(item)
-
-    def populate_visit_list(self):
-        self.visit_list.DeleteAllItems()
-        if self.patient_id is not None:
-            for item in (
-                get_app()
-                .conn.execute(
-                    """
-                        SELECT id, exam_datetime, diagnosis FROM visits WHERE patient_id = ?
-                        ORDER BY id DESC
-                        """,
-                    (self.patient_id,),
-                )
-                .fetchall()
-            ):
-                self.visit_list.append(item)
+        self.patient_search.SetFocus()    
 
     def on_medicine_add_btn(self, _):
         assert self.medicine_idx is not None
@@ -613,7 +537,7 @@ class MainFrame(wx.Frame):
             ]
         )
         self.medicine_idx = None
-        self.calculate_visit_price()
+        self.change_visit_price()
         self.medicine_search.SetFocus()
 
     def on_medicine_del_btn(self, _):
@@ -623,7 +547,7 @@ class MainFrame(wx.Frame):
         for i in range(self.medicine_list.ItemCount):
             self.medicine_list.SetItem(i, 0, str(i + 1))
         self.medicine_idx = None
-        self.calculate_visit_price()
+        self.change_visit_price()
 
     def on_service_add_btn(self, _):
         assert self.service_idx is not None
@@ -638,7 +562,7 @@ class MainFrame(wx.Frame):
             ]
         )
         self.service_idx = None
-        self.calculate_visit_price()
+        self.change_visit_price()
         self.service_search.SetFocus()
 
     def on_service_del_btn(self, _):
@@ -648,7 +572,7 @@ class MainFrame(wx.Frame):
         for i in range(self.service_list.ItemCount):
             self.service_list.SetItem(i, 0, str(i + 1))
         self.service_idx = None
-        self.calculate_visit_price()
+        self.change_visit_price()
 
     def on_patient_new_btn(self, _):
         self.patient_id = None
@@ -661,7 +585,7 @@ class MainFrame(wx.Frame):
         self.GetSizer().Layout()
 
     def on_patient_ok_btn(self, _):
-        id = self.patient_id
+        patient_id = self.patient_id
         patient = Patient(
             name=self.patient_name.Value.strip().upper(),
             gender=self.patient_gender.GetGender(),
@@ -669,16 +593,16 @@ class MainFrame(wx.Frame):
             past_history=self.patient_past_history.Value.strip(),
         )
         try:
-            if id is None:
-                id = insert(get_app().conn, patient)
+            if patient_id is None:
+                patient_id = insert(get_app().conn, patient)
                 wx.MessageBox("Thêm bệnh nhân thành công")
             else:
-                update(get_app().conn, patient, id)
+                update(get_app().conn, patient, patient_id)
                 wx.MessageBox("Cập nhật bệnh nhân thành công")
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
         finally:
-            self.patient_id = id
+            self.patient_id = patient_id
             self.GetSizer().Layout()
 
     def on_patient_cancel_btn(self, _):
@@ -722,7 +646,7 @@ class MainFrame(wx.Frame):
 
     def on_visit_ok_btn(self, _):
         if self.patient_id is not None:
-            id = self.visit_id
+            visit_id = self.visit_id
             visit = Visit(
                 patient_id=self.patient_id,
                 weight=int(self.visit_weight.GetInt() * 10),
@@ -733,20 +657,20 @@ class MainFrame(wx.Frame):
                 price=self.visit_price.GetInt(),
             )
             try:
-                if id is None:
-                    id = insert(get_app().conn, visit)
+                if visit_id is None:
+                    visit_id = insert(get_app().conn, visit)
                     for item in self.medicine_list.to_model():
                         insert(get_app().conn, item)
                     for item in self.service_list.to_model():
                         insert(get_app().conn, item)
                     wx.MessageBox("Thêm lượt khám thành công")
                 else:
-                    update(get_app().conn, visit, id)
+                    update(get_app().conn, visit, visit_id)
                     get_app().conn.execute(
-                        "DELETE FROM medicines WHERE visit_id = ?", (id,)
+                        "DELETE FROM medicines WHERE visit_id = ?", (visit_id,)
                     )
                     get_app().conn.execute(
-                        "DELETE FROM services WHERE visit_id = ?", (id,)
+                        "DELETE FROM services WHERE visit_id = ?", (visit_id,)
                     )
                     for item in self.medicine_list.to_model():
                         insert(get_app().conn, item)
@@ -757,8 +681,8 @@ class MainFrame(wx.Frame):
                 wx.MessageBox(str(error), "Lỗi")
             finally:
                 get_app().fetch_medicine_store()
-                self.populate_visit_list()
-                self.visit_id = id
+                self.visit_list.query(self.patient_id)
+                self.visit_id = visit_id
                 self.GetSizer().Layout()
 
     def on_visit_cancel_btn(self, _):
@@ -792,10 +716,10 @@ class MainFrame(wx.Frame):
                 str(selling_price * new_quantity),
             )
 
-        self.calculate_medicine_quatity()
-        self.calculate_visit_price()
+        self.change_medicine_quatity()
+        self.change_visit_price()
 
-    def display_usage_note(self):
+    def change_medicine_full_usage_note(self):
         if (
             self.medicine_idx is not None
             and self.medicine_times.Value != ""
@@ -803,7 +727,7 @@ class MainFrame(wx.Frame):
         ):
             m = get_app().medicine_store[self.medicine_idx]
             self.medicine_full_usage_note.SetLabel(
-                calculate_full_usage_note(
+                "{} ngày {} lần, lần {} {} ({})".format(
                     m["route"],
                     int(self.medicine_times.Value),
                     self.medicine_dose.Value.strip(),
@@ -812,7 +736,7 @@ class MainFrame(wx.Frame):
                 )
             )
 
-    def calculate_medicine_quatity(self):
+    def change_medicine_quatity(self):
         if (
             self.medicine_idx is not None
             and self.medicine_times.Value != ""
@@ -829,7 +753,7 @@ class MainFrame(wx.Frame):
                 )
             )
 
-    def calculate_visit_price(self):
+    def change_visit_price(self):
         self.visit_price.SetInt(
             get_app().config["process"]["price"]
             + sum(
@@ -841,3 +765,16 @@ class MainFrame(wx.Frame):
                 for i in range(self.service_list.ItemCount)
             )
         )
+
+
+def calculate_medicine_quantity(
+    times: int, dose: str, usage_unit: str, selling_unit: str, days: int
+) -> int:
+    if usage_unit != selling_unit:
+        return 1
+    else:
+        if "/" in dose:
+            numer, denom = [int(i) for i in dose.strip().split("/", 1)]
+            return ceil(times * Fraction(numer, denom) * days)
+        else:
+            return ceil(times * float(dose.strip()) * days)

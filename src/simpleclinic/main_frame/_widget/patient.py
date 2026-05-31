@@ -13,8 +13,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Tên", width=280)
         self.AppendColumn("Giới", width=-2)
         self.AppendColumn("Ngày sinh", width=130)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_patient_select)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_patient_deselect)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -26,8 +26,35 @@ class List(wx.ListCtrl):
             ]
         )
 
-    def on_patient_select(self, e: wx.ListEvent):
+    def on_select(self, e: wx.ListEvent):
         get_main_frame().patient_id = int(self.GetItemText(e.Index, 0))
 
-    def on_patient_deselect(self, _):
+    def on_deselect(self, _):
         get_main_frame().patient_id = None
+
+
+class Queue(List):
+    def query(self, value: str):
+        self.DeleteAllItems()
+        for item in get_app().conn.execute(
+            """
+            SELECT id, name, gender, birthdate from patients
+            WHERE name LIKE ?
+            """,
+            ("%" + value.upper() + "%",),
+        ):
+            self.append(item)
+
+
+class SeenToday(List):
+    def query(self):
+        self.DeleteAllItems()
+        for item in get_app().conn.execute("SELECT * FROM seen_today"):
+            self.append(item)
+
+
+class FollowUp(List):
+    def query(self):
+        self.DeleteAllItems()
+        for item in get_app().conn.execute("SELECT * FROM follow_up"):
+            self.append(item)

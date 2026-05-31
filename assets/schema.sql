@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS services (
 
 CREATE INDEX IF NOT EXISTS patient_name ON patients (name);
 
-CREATE VIEW IF NOT EXISTS seentoday
+CREATE VIEW IF NOT EXISTS seen_today
 (id, name, gender, birthdate) AS
 SELECT p.id, p.name, p.gender, p.birthdate
 FROM patients AS p JOIN visits as v

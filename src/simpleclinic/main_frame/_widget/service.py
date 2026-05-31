@@ -14,8 +14,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Dịch vụ", width=200)
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Giá", width=-1)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_service_list_select)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_service_list_deselect)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -28,11 +28,28 @@ class List(wx.ListCtrl):
             ]
         )
 
-    def on_service_list_select(self, _):
+    def on_select(self, _):
         get_main_frame().service_del_btn.Enable()
 
-    def on_service_list_deselect(self, _):
+    def on_deselect(self, _):
         get_main_frame().service_del_btn.Disable()
+
+    def query(self, visit_id: int):
+        self.DeleteAllItems()
+        for item in (
+            get_app()
+            .conn.execute(
+                """
+                SELECT s.id, s.name, m.quantity, s.selling_price
+                FROM (SELECT service_id, quantity FROM services WHERE visit_id=?) AS m
+                JOIN (SELECT id, name, selling_price FROM service_store) AS s
+                WHERE s.id = m.service_id
+                """,
+                (visit_id,),
+            )
+            .fetchall()
+        ):
+            self.append(item)
 
     def to_model(self) -> Iterable[Service]:
         visit_id = get_main_frame().visit_id

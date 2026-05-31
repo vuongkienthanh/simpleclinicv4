@@ -19,8 +19,8 @@ class List(wx.ListCtrl):
         self.AppendColumn("Số lượng", width=-1)
         self.AppendColumn("Ghi chú", width=-1)
         self.AppendColumn("Giá", width=-1)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_medicine_list_select)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_medicine_list_deselect)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
     def append(self, item: sqlite3.Row):
         self.Append(
@@ -38,11 +38,28 @@ class List(wx.ListCtrl):
             ]
         )
 
-    def on_medicine_list_select(self, _):
+    def on_select(self, _):
         get_main_frame().medicine_del_btn.Enable()
 
-    def on_medicine_list_deselect(self, _):
+    def on_deselect(self, _):
         get_main_frame().medicine_del_btn.Disable()
+    
+    def query(self, visit_id: int):
+        self.DeleteAllItems()
+        for item in (
+            get_app()
+            .conn.execute(
+                """
+                SELECT s.id, s.name, s.element, s.route, m.times, m.dose, m.quantity, m.usage_note, s.selling_unit, s.selling_price, s.usage_unit 
+                FROM (SELECT medicine_id, times, dose, quantity, usage_note FROM medicines WHERE visit_id=?) AS m
+                JOIN (SELECT id, name, element, route, selling_price, selling_unit, usage_unit FROM medicine_store) AS s
+                WHERE s.id = m.medicine_id
+                """,
+                (visit_id,),
+            )
+            .fetchall()
+        ):
+            self.append(item)
 
     def to_model(self) -> Iterable[Medicine]:
         visit_id = get_main_frame().visit_id
