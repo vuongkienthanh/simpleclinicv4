@@ -78,7 +78,7 @@ class MainFrame(wx.Frame):
         self.visit_days = wx.SpinCtrl(
             self.visit_box,
             initial=get_app().config["process"]["default_days_for_prescription"],
-            min=0,
+            min=1,
         )
         self.visit_medical_history = wx.TextCtrl(self.visit_box, style=wx.TE_MULTILINE)
         self.visit_diagnosis = wx.TextCtrl(self.visit_box)
