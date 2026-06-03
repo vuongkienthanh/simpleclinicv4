@@ -14,10 +14,10 @@ class AddDialog(Dialog):
     @override
     def on_ok(self, _):
         item = self.get_item()
-        app = get_app()
         try:
-            insert(app.conn, item)
-            app.fetch_service_store()
+            with get_app().conn as conn:
+                insert(conn, item)
+            get_app().fetch_service_store()
             cast(service_store_frame.StoreFrame, self.Parent).refresh()
             self.Close()
         except sqlite3.Error as error:
@@ -32,10 +32,10 @@ class UpdateDialog(Dialog):
     def on_ok(self, _):
         assert isinstance(self.id, int)
         item = self.get_item()
-        app = get_app()
         try:
-            update(app.conn, item, self.id)
-            app.fetch_service_store()
+            with get_app().conn as conn:
+                update(conn, item, self.id)
+            get_app().fetch_service_store()
             cast(service_store_frame.StoreFrame, self.Parent).refresh()
             self.Close()
         except sqlite3.Error as error:

@@ -102,8 +102,7 @@ class StoreFrame(wx.Frame):
     def on_del(self, _):
         item = self.listctrl.GetFirstSelected()
         assert item >= 0
-        id = int(self.listctrl.GetItemText(item, 0))
-        app = get_app()
+        service_id = int(self.listctrl.GetItemText(item, 0))
         if (
             wx.MessageBox(
                 f"{self.listctrl.GetItemText(item, 1)}",
@@ -113,8 +112,9 @@ class StoreFrame(wx.Frame):
             == wx.YES
         ):
             try:
-                delete(app.conn, ServiceStore, id)
-                app.fetch_service_store()
+                with get_app().conn as conn:
+                    delete(conn, ServiceStore, service_id)
+                get_app().fetch_service_store()
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Không xoá được")
         self.refresh()

@@ -307,9 +307,7 @@ class MainFrame(wx.Frame):
                 self.change_medicine_quatity(),
             ),
         )
-        self.medicine_note.Bind(
-            wx.EVT_TEXT, lambda _: self.change_medicine_full_note()
-        )
+        self.medicine_note.Bind(wx.EVT_TEXT, lambda _: self.change_medicine_full_note())
 
         # visits_days
         self.visit_days.Bind(wx.EVT_SPINCTRL, self.on_visit_days_spin)
@@ -604,10 +602,12 @@ class MainFrame(wx.Frame):
         )
         try:
             if patient_id is None:
-                patient_id = insert(get_app().conn, patient)
+                with get_app().conn as conn:
+                    patient_id = insert(conn, patient)
                 wx.MessageBox("Thêm bệnh nhân thành công")
             else:
-                update(get_app().conn, patient, patient_id)
+                with get_app().conn as conn:
+                    update(conn, patient, patient_id)
                 wx.MessageBox("Cập nhật bệnh nhân thành công")
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
@@ -668,24 +668,100 @@ class MainFrame(wx.Frame):
             )
             try:
                 if visit_id is None:
-                    visit_id = insert(get_app().conn, visit)
-                    for item in self.medicine_list.to_model():
-                        insert(get_app().conn, item)
-                    for item in self.service_list.to_model():
-                        insert(get_app().conn, item)
+                    with get_app().conn as conn:
+                        conn.execute(
+                            """
+                            INSERT INTO visits (patient_id, weight, medical_history, diagnosis, days, note, price)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                visit.patient_id,
+                                visit.weight,
+                                visit.medical_history,
+                                visit.diagnosis,
+                                visit.days,
+                                visit.note,
+                                visit.price,
+                            ),
+                        )
+                        conn.executemany(
+                            """
+                            INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                (
+                                    item.medicine_id,
+                                    item.visit_id,
+                                    item.times,
+                                    item.dose,
+                                    item.quantity,
+                                    item.note,
+                                )
+                                for item in self.medicine_list.to_model()
+                            ),
+                        )
+                        conn.executemany(
+                            """
+                            INSERT INTO services (service_id, visit_id, quantity)
+                            VALUES (?, ?, ?)
+                            """,
+                            (
+                                (item.service_id, item.visit_id, item.quantity)
+                                for item in self.service_list.to_model()
+                            ),
+                        )
                     wx.MessageBox("Thêm lượt khám thành công")
                 else:
-                    update(get_app().conn, visit, visit_id)
-                    get_app().conn.execute(
-                        "DELETE FROM medicines WHERE visit_id = ?", (visit_id,)
-                    )
-                    get_app().conn.execute(
-                        "DELETE FROM services WHERE visit_id = ?", (visit_id,)
-                    )
-                    for item in self.medicine_list.to_model():
-                        insert(get_app().conn, item)
-                    for item in self.service_list.to_model():
-                        insert(get_app().conn, item)
+                    with get_app().conn as conn:
+                        conn.execute(
+                            """
+                            UPDATE visits SET (weight, medical_history, diagnosis, days, note, price)
+                            = (?, ?, ?, ?, ?, ?) WHERE id = ?
+                            """,
+                            (
+                                visit.weight,
+                                visit.medical_history,
+                                visit.diagnosis,
+                                visit.days,
+                                visit.note,
+                                visit.price,
+                                visit_id,
+                            ),
+                        )
+                        conn.execute(
+                            "DELETE FROM medicines WHERE visit_id = ?", (visit_id,)
+                        )
+                        conn.execute(
+                            "DELETE FROM services WHERE visit_id = ?", (visit_id,)
+                        )
+                        conn.executemany(
+                            """
+                            INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                (
+                                    item.medicine_id,
+                                    item.visit_id,
+                                    item.times,
+                                    item.dose,
+                                    item.quantity,
+                                    item.note,
+                                )
+                                for item in self.medicine_list.to_model()
+                            ),
+                        )
+                        conn.executemany(
+                            """
+                            INSERT INTO services (service_id, visit_id, quantity)
+                            VALUES (?, ?, ?)
+                            """,
+                            (
+                                (item.service_id, item.visit_id, item.quantity)
+                                for item in self.service_list.to_model()
+                            ),
+                        )
                     wx.MessageBox("Cập nhật lượt khám thành công")
             except sqlite3.Error as error:
                 wx.MessageBox(str(error), "Lỗi")
