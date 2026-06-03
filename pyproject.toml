@@ -36,10 +36,11 @@ reportUnannotatedClassAttribute = false
 reportUnknownParameterType = false
 reportMissingParameterType = false
 reportUnknownLambdaType = false
+reportUninitializedInstanceVariable = false
 
 [project.scripts]
 init = "init:main"
-backup_db = "backup_db:main"
+backup = "backup:main"
 s1a = "s1a:main"
 
 [project.gui-scripts]

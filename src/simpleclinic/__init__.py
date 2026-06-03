@@ -22,8 +22,8 @@ def platform_settings():
 
 
 class App(wx.App):
-    def __init__(self):
-        super().__init__()
+    @override
+    def OnInit(self):
         self.locale = wx.Locale(wx.LANGUAGE_VIETNAMESE)
         with open(PYPROJECT, "rb") as f:
             data = tomllib.load(f)
@@ -67,9 +67,10 @@ class App(wx.App):
         self.medicine_store: list[sqlite3.Row]
         self.service_store: list[sqlite3.Row]
         self.refresh()
+        return True
 
     @override
-    def __del__(self):
+    def OnExit(self):
         self.conn.executescript(
             """
             PRAGMA optimize;
@@ -79,7 +80,7 @@ class App(wx.App):
             """
         )
         self.conn.close()
-        super().__del__()
+        return super().OnExit()
 
     def fetch_medicine_store(self):
         self.medicine_store = self.conn.execute("""

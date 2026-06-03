@@ -17,7 +17,7 @@ from lib.wx_helper.widget import (
 )
 from lib.db.models import Patient, Visit
 from lib.enums import Gender
-from lib.db import insert, update
+from lib.db import insert, update, delete
 from lib.vn import bd_to_age, wxdatetime_to_vietnamese_datetime
 from ._widget import (
     patient,
@@ -669,21 +669,7 @@ class MainFrame(wx.Frame):
             try:
                 if visit_id is None:
                     with get_app().conn as conn:
-                        conn.execute(
-                            """
-                            INSERT INTO visits (patient_id, weight, medical_history, diagnosis, days, note, price)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                visit.patient_id,
-                                visit.weight,
-                                visit.medical_history,
-                                visit.diagnosis,
-                                visit.days,
-                                visit.note,
-                                visit.price,
-                            ),
-                        )
+                        insert(conn, visit)
                         conn.executemany(
                             """
                             INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
@@ -714,21 +700,7 @@ class MainFrame(wx.Frame):
                     wx.MessageBox("Thêm lượt khám thành công")
                 else:
                     with get_app().conn as conn:
-                        conn.execute(
-                            """
-                            UPDATE visits SET (weight, medical_history, diagnosis, days, note, price)
-                            = (?, ?, ?, ?, ?, ?) WHERE id = ?
-                            """,
-                            (
-                                visit.weight,
-                                visit.medical_history,
-                                visit.diagnosis,
-                                visit.days,
-                                visit.note,
-                                visit.price,
-                                visit_id,
-                            ),
-                        )
+                        update(conn, visit, visit_id)
                         conn.execute(
                             "DELETE FROM medicines WHERE visit_id = ?", (visit_id,)
                         )

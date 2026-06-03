@@ -8,7 +8,7 @@ def main():
     if DB.exists():
         print("A database file existed.")
         if input("Back up database?[y/n]") == "y":
-            bk = APP_DIR / ("simpleclinic" + dt.datetime.now().isoformat() + ".bak")
+            bk = APP_DIR / ("simpleclinic_" + dt.datetime.now().isoformat() + ".bak")
             shutil.copyfile(DB, bk)
             print(f"Back up to {bk}")
     else:
