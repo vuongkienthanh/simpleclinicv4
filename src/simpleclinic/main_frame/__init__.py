@@ -603,7 +603,7 @@ class MainFrame(wx.Frame):
         try:
             if patient_id is None:
                 with get_app().conn as conn:
-                    patient_id = insert(conn, patient)
+                    self._patient_id = insert(conn, patient)
                 wx.MessageBox("Thêm bệnh nhân thành công")
             else:
                 with get_app().conn as conn:
@@ -612,7 +612,7 @@ class MainFrame(wx.Frame):
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
         finally:
-            self.patient_id = patient_id
+            self.patient_edit_mode(False)
             self.GetSizer().Layout()
 
     def on_patient_cancel_btn(self, _):
@@ -669,7 +669,7 @@ class MainFrame(wx.Frame):
             try:
                 if visit_id is None:
                     with get_app().conn as conn:
-                        insert(conn, visit)
+                        self._visit_id = insert(conn, visit)
                         conn.executemany(
                             """
                             INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
