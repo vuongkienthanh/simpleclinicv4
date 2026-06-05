@@ -36,7 +36,6 @@ class StoreFrame(wx.Frame):
 
         self.refresh()
 
-        self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_SEARCH, self.on_search, source=self.searchctrl)
         self.Bind(wx.EVT_TEXT, self.on_text, source=self.searchctrl)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select, source=self.listctrl)
@@ -52,10 +51,6 @@ class StoreFrame(wx.Frame):
             self.listctrl.append(item)
         self.upd_btn.Disable()
         self.del_btn.Disable()
-
-    def on_close(self, e: wx.Event):
-        get_app().refresh()
-        e.Skip()
 
     def on_search(self, e: wx.CommandEvent):
         match e.GetString().strip().casefold():
