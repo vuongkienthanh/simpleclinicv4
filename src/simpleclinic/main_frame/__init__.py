@@ -740,7 +740,7 @@ class MainFrame(wx.Frame):
             finally:
                 get_app().fetch_medicine_store()
                 self.visit_list.query(self.patient_id)
-                self.visit_id = visit_id
+                self.visit_id = self.visit_id
                 self.GetSizer().Layout()
 
     def on_visit_cancel_btn(self, _):
