@@ -88,3 +88,10 @@ CREATE VIEW IF NOT EXISTS follow_up
 SELECT p.id, p.name, p.gender, p.birthdate
 FROM patients AS p JOIN visits as v
 WHERE (v.patient_id = p.id) AND (DATE(v.exam_datetime, '+' || v.days || ' days') == DATE('now', 'localtime'));
+
+CREATE TRIGGER IF NOT EXISTS patient_birthdate_not_today
+BEFORE INSERT ON patients
+WHEN NEW.birthdate = DATE('now', 'localtime')
+BEGIN
+    SELECT RAISE(ABORT, 'The patient birthdate cannot be the current date.');
+END;
