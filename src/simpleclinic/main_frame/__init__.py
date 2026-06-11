@@ -17,7 +17,7 @@ from lib.wx_helper.widget import (
 )
 from lib.db.models import Patient, Visit
 from lib.enums import Gender
-from lib.db import insert, update, delete
+from lib.db import insert, update
 from lib.vn import bd_to_age, wxdatetime_to_vietnamese_datetime
 from ._widget import (
     patient,
@@ -735,13 +735,12 @@ class MainFrame(wx.Frame):
                             ),
                         )
                     wx.MessageBox("Cập nhật lượt khám thành công")
-            except sqlite3.Error as error:
-                wx.MessageBox(str(error), "Lỗi")
-            finally:
                 get_app().fetch_medicine_store()
                 self.visit_list.query(self.patient_id)
                 self.visit_id = self.visit_id
                 self.GetSizer().Layout()
+            except sqlite3.Error as error:
+                wx.MessageBox(str(error), "Lỗi")
 
     def on_visit_cancel_btn(self, _):
         self.visit_id = self.visit_id

@@ -131,8 +131,8 @@ class Popup(wx.ComboPopup):
             self.select_item()
 
     def select_item(self):
-        get_main_frame().service_idx = self._ptr_list[self.curitem]
         self.Dismiss()
+        get_main_frame().service_idx = self._ptr_list[self.curitem]
         self.ComboCtrl.Navigate()
 
     def on_char(self, e: wx.KeyEvent):
