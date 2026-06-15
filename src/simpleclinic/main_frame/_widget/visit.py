@@ -1,15 +1,15 @@
 import wx
 import sqlite3
 from lib.vn import wxdatetime_to_vietnamese_datetime
-from lib.wx_helper import get_main_frame, get_app
+from lib.wx_helper import get_main_frame, get_app, lc_scale
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("Mã lượt khám", width=-1)
-        self.AppendColumn("Ngày giờ khám", width=200)
-        self.AppendColumn("Chẩn đoán", width=250)
+        self.AppendColumn("Mã LK", width=lc_scale(80))
+        self.AppendColumn("Ngày giờ khám", width=lc_scale(200))
+        self.AppendColumn("Chẩn đoán", width=lc_scale(250))
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_click)
 

@@ -1,19 +1,20 @@
 import wx
 import sqlite3
+from lib.wx_helper import lc_scale
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("Mã", width=-1)
-        self.AppendColumn("Tên", width=300)
-        self.AppendColumn("Thành phần", width=300)
-        self.AppendColumn("Số lượng", width=-1)
-        self.AppendColumn("Đường dùng", width=-1)
-        self.AppendColumn("Đơn vị dùng", width=-1)
-        self.AppendColumn("Đơn vị bán", width=-1)
-        self.AppendColumn("Giá mua", width=-1)
-        self.AppendColumn("Giá bán", width=-1)
+        self.AppendColumn("Mã", width=lc_scale(50))
+        self.AppendColumn("Tên", width=lc_scale(250))
+        self.AppendColumn("Thành phần", width=lc_scale(250))
+        self.AppendColumn("Số lượng", width=lc_scale(100))
+        self.AppendColumn("Đường dùng", width=lc_scale(100))
+        self.AppendColumn("Đơn vị dùng", width=lc_scale(100))
+        self.AppendColumn("Đơn vị bán", width=lc_scale(100))
+        self.AppendColumn("Giá mua", width=lc_scale(100))
+        self.AppendColumn("Giá bán", width=lc_scale(100))
 
     def append(self, item: sqlite3.Row):
         self.Append(

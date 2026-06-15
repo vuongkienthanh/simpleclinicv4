@@ -1,16 +1,16 @@
 import wx
 import sqlite3
 from lib import DATE_FORMAT
-from lib.wx_helper import get_main_frame, get_app
+from lib.wx_helper import get_main_frame, get_app, lc_scale
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("Mã BN", width=-1)
-        self.AppendColumn("Tên", width=280)
-        self.AppendColumn("Giới", width=-2)
-        self.AppendColumn("Ngày sinh", width=130)
+        self.AppendColumn("Mã BN", width=lc_scale(60))
+        self.AppendColumn("Tên", width=lc_scale(280))
+        self.AppendColumn("Giới", width=lc_scale(60))
+        self.AppendColumn("Ngày sinh", width=lc_scale(130))
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_click)
 
@@ -63,4 +63,3 @@ class FollowUp(List):
         self.DeleteAllItems()
         for item in get_app().conn.execute("SELECT * FROM follow_up"):
             self.append(item)
-

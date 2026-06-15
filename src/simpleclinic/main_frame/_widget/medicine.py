@@ -2,24 +2,24 @@ from collections.abc import Iterable
 import wx
 import sqlite3
 from typing import override
-from lib.wx_helper import get_app, get_main_frame
+from lib.wx_helper import get_app, get_main_frame, lc_scale
 from lib.db.models import Medicine
 
 
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("STT", width=-2)
-        self.AppendColumn("Mã", width=-2)
-        self.AppendColumn("Thuốc", width=180)
-        self.AppendColumn("Thành phần", width=180)
-        self.AppendColumn("Cách dùng", width=-2)
-        self.AppendColumn("Số Lần", width=-1)
-        self.AppendColumn("Mỗi lần", width=-1)
-        self.AppendColumn("Số lượng", width=-1)
-        self.AppendColumn("Ghi chú", width=-1)
-        self.AppendColumn("Đơn giá", width=-1)
-        self.AppendColumn("Thành giá", width=-1)
+        self.AppendColumn("STT", width=lc_scale(35))
+        self.AppendColumn("Mã", width=lc_scale(60))
+        self.AppendColumn("Thuốc", width=lc_scale(180))
+        self.AppendColumn("Thành phần", width=lc_scale(180))
+        self.AppendColumn("Cách dùng", width=lc_scale(90))
+        self.AppendColumn("Số Lần", width=lc_scale(70))
+        self.AppendColumn("Mỗi lần", width=lc_scale(70))
+        self.AppendColumn("Số lượng", width=lc_scale(80))
+        self.AppendColumn("Ghi chú", width=lc_scale(100))
+        self.AppendColumn("Đơn giá", width=lc_scale(100))
+        self.AppendColumn("Thành giá", width=lc_scale(100))
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_deselect)
 
@@ -89,13 +89,13 @@ class Popup(wx.ComboPopup):
         self.lc = wx.ListCtrl(
             parent, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.SIMPLE_BORDER
         )
-        self.lc.AppendColumn("Mã", width=-1)
-        self.lc.AppendColumn("Thuốc", width=150)
-        self.lc.AppendColumn("Thành phần", width=150)
-        self.lc.AppendColumn("Số lượng", width=-1)
-        self.lc.AppendColumn("Đơn vị", width=-1)
-        self.lc.AppendColumn("Đơn giá", width=-1)
-        self.lc.AppendColumn("Cách dùng", width=-1)
+        self.lc.AppendColumn("Mã", width=lc_scale(50))
+        self.lc.AppendColumn("Thuốc", width=lc_scale(150))
+        self.lc.AppendColumn("Thành phần", width=lc_scale(150))
+        self.lc.AppendColumn("Số lượng", width=lc_scale(80))
+        self.lc.AppendColumn("Đơn vị", width=lc_scale(80))
+        self.lc.AppendColumn("Đơn giá", width=lc_scale(100))
+        self.lc.AppendColumn("Cách dùng", width=lc_scale(90))
         self.lc.Bind(wx.EVT_MOTION, self.on_motion)
         self.lc.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
         self.lc.Bind(wx.EVT_CHAR, self.on_char)

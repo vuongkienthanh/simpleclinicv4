@@ -9,3 +9,5 @@ main_frame = [206, 219, 186]
 patient_info = [230, 239, 254]
 visit_info = [230, 239, 254]
 order_info = [230, 219, 254]
+
+lc_header_scale = 1

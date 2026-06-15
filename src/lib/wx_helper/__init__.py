@@ -25,6 +25,10 @@ def row(*children) -> wx.BoxSizer:
     return sizer
 
 
+def lc_scale(pixel: int) -> int:
+    return int(get_app().config["theme"]["lc_header_scale"] * pixel)
+
+
 DIRECTIONS = [
     wx.WXK_HOME,
     wx.WXK_END,
