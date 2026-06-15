@@ -9,8 +9,8 @@ from lib.wx_helper import get_app, get_main_frame, lc_scale
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("STT", width=lc_scale(35))
-        self.AppendColumn("Mã DV", width=lc_scale(60))
+        self.AppendColumn("STT", width=lc_scale(50))
+        self.AppendColumn("Mã", width=lc_scale(60))
         self.AppendColumn("Dịch vụ", width=lc_scale(200))
         self.AppendColumn("Số lượng", width=lc_scale(80))
         self.AppendColumn("Đơn giá", width=lc_scale(100))

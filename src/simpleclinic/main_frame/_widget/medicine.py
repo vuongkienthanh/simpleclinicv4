@@ -9,7 +9,7 @@ from lib.db.models import Medicine
 class List(wx.ListCtrl):
     def __init__(self, parent: wx.Window):
         super().__init__(parent, style=wx.LC_REPORT)
-        self.AppendColumn("STT", width=lc_scale(35))
+        self.AppendColumn("STT", width=lc_scale(50))
         self.AppendColumn("Mã", width=lc_scale(60))
         self.AppendColumn("Thuốc", width=lc_scale(180))
         self.AppendColumn("Thành phần", width=lc_scale(180))
