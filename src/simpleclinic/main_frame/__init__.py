@@ -800,7 +800,7 @@ class MainFrame(wx.Frame):
             self.medicine_quantity.ChangeValue(
                 calculate_medicine_quantity(  # pyright: ignore[reportArgumentType]
                     int(self.medicine_times.Value),
-                    self.medicine_dose.Value,
+                    self.medicine_dose.Value.strip(),
                     m["usage_unit"],
                     m["selling_unit"],
                     int(self.visit_days.Value),
@@ -827,8 +827,10 @@ def calculate_medicine_quantity(
     if usage_unit != selling_unit:
         return 1
     else:
-        if "/" in dose:
-            numer, denom = [int(i) for i in dose.strip().split("/", 1)]
+        if "/" in dose[1:-1]:
+            numer, denom = [int(i) for i in dose.split("/", 1)]
             return ceil(times * Fraction(numer, denom) * days)
+        elif dose.endswith("/"):
+            return ceil(times * float(dose[:-1]) * days)
         else:
-            return ceil(times * float(dose.strip()) * days)
+            return ceil(times * float(dose) * days)
