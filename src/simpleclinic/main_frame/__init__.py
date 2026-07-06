@@ -56,7 +56,6 @@ class MainFrame(wx.Frame):
         self.patient_name = wx.TextCtrl(self.patient_box)
         self.patient_gender = GenderChoiceCtrl(self.patient_box)
         self.patient_birthdate = wx.adv.DatePickerCtrl(self.patient_box)
-        self.patient_birthdate.SetRange(wx.DateTime(), wx.DateTime.Today())
         self.patient_age = wx.TextCtrl(
             self.patient_box, size=wx.Size(120, -1), style=wx.TE_READONLY
         )
@@ -291,6 +290,10 @@ class MainFrame(wx.Frame):
         # others
         self.patient_search.Bind(
             wx.EVT_SEARCH, lambda e: self.queue.query(e.String.strip().upper())
+        )
+        self.patient_birthdate.Bind(
+            wx.adv.EVT_DATE_CHANGED,
+            lambda e: self.patient_age.ChangeValue(bd_to_age(e.GetDate())),
         )
 
         self.medicine_times.Bind(
