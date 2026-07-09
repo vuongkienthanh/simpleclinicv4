@@ -71,7 +71,7 @@ class MenuBar(wx.MenuBar):
         if wx.TheClipboard.Open():
             t = """
 {}
-{} ({} {} {})
+{} ({} {} {} {} kg)
 Chẩn đoán: {}
 Thuốc {} ngày:
 {}
@@ -85,6 +85,7 @@ Tiền khám: {}
                 f"{get_main_frame().patient_gender.GetGender().display_name}",
                 f"{get_main_frame().patient_birthdate.Value.Format(DATE_FORMAT)}",
                 f"{bd_to_age(get_main_frame().patient_birthdate.Value)}",
+                get_main_frame().visit_weight.Value,
                 get_main_frame().visit_diagnosis.Value,
                 get_main_frame().visit_days.Value,
                 "\n".join(
