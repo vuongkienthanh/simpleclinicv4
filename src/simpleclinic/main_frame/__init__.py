@@ -615,7 +615,7 @@ class MainFrame(wx.Frame):
         except sqlite3.Error as error:
             wx.MessageBox(str(error), "Lỗi")
         finally:
-            self.patient_edit_mode(False)
+            self.patient_id = self.patient_id
             self.GetSizer().Layout()
 
     def on_patient_cancel_btn(self, _):
@@ -658,92 +658,70 @@ class MainFrame(wx.Frame):
             self.GetSizer().Layout()
 
     def on_visit_ok_btn(self, _):
-        if self.patient_id is not None:
-            visit_id = self.visit_id
-            visit = Visit(
-                patient_id=self.patient_id,
-                weight=int(self.visit_weight.GetInt() * 10),
-                medical_history=self.visit_medical_history.Value.strip(),
-                diagnosis=self.visit_diagnosis.Value.strip(),
-                days=int(self.visit_days.Value),
-                note=self.visit_note.Value.strip(),
-                price=self.visit_price.GetInt(),
-            )
-            try:
-                if visit_id is None:
-                    with get_app().conn as conn:
-                        self._visit_id = insert(conn, visit)
-                        conn.executemany(
-                            """
-                            INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                (
-                                    item.medicine_id,
-                                    item.visit_id,
-                                    item.times,
-                                    item.dose,
-                                    item.quantity,
-                                    item.note,
-                                )
-                                for item in self.medicine_list.to_model()
-                            ),
+        assert self.patient_id is not None
+        visit = Visit(
+            patient_id=self.patient_id,
+            weight=int(self.visit_weight.GetInt() * 10),
+            medical_history=self.visit_medical_history.Value.strip(),
+            diagnosis=self.visit_diagnosis.Value.strip(),
+            days=int(self.visit_days.Value),
+            note=self.visit_note.Value.strip(),
+            price=self.visit_price.GetInt(),
+        )
+        try:
+            if self.visit_id is None:
+                with get_app().conn as conn:
+                    self._visit_id = insert(conn, visit)
+            else:
+                with get_app().conn as conn:
+                    update(conn, visit, self.visit_id)
+        except sqlite3.Error as e:
+            wx.MessageBox(str(e), "Lỗi lưu lượt khám")
+            return
+
+        try:
+            with get_app().conn as conn:
+                conn.execute(
+                    "DELETE FROM medicines WHERE visit_id = ?", (self.visit_id,)
+                )
+                conn.execute(
+                    "DELETE FROM services WHERE visit_id = ?", (self.visit_id,)
+                )
+                conn.executemany(
+                    """
+                    INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        (
+                            item.medicine_id,
+                            item.visit_id,
+                            item.times,
+                            item.dose,
+                            item.quantity,
+                            item.note,
                         )
-                        conn.executemany(
-                            """
-                            INSERT INTO services (service_id, visit_id, quantity)
-                            VALUES (?, ?, ?)
-                            """,
-                            (
-                                (item.service_id, item.visit_id, item.quantity)
-                                for item in self.service_list.to_model()
-                            ),
-                        )
-                    wx.MessageBox("Thêm lượt khám thành công")
-                else:
-                    with get_app().conn as conn:
-                        update(conn, visit, visit_id)
-                        conn.execute(
-                            "DELETE FROM medicines WHERE visit_id = ?", (visit_id,)
-                        )
-                        conn.execute(
-                            "DELETE FROM services WHERE visit_id = ?", (visit_id,)
-                        )
-                        conn.executemany(
-                            """
-                            INSERT INTO medicines (medicine_id, visit_id, times, dose, quantity, note)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                (
-                                    item.medicine_id,
-                                    item.visit_id,
-                                    item.times,
-                                    item.dose,
-                                    item.quantity,
-                                    item.note,
-                                )
-                                for item in self.medicine_list.to_model()
-                            ),
-                        )
-                        conn.executemany(
-                            """
-                            INSERT INTO services (service_id, visit_id, quantity)
-                            VALUES (?, ?, ?)
-                            """,
-                            (
-                                (item.service_id, item.visit_id, item.quantity)
-                                for item in self.service_list.to_model()
-                            ),
-                        )
-                    wx.MessageBox("Cập nhật lượt khám thành công")
-                get_app().fetch_medicine_store()
-                self.visit_list.query(self.patient_id)
-                self.visit_id = self.visit_id
-                self.GetSizer().Layout()
-            except sqlite3.Error as error:
-                wx.MessageBox(str(error), "Lỗi")
+                        for item in self.medicine_list.to_model()
+                    ),
+                )
+                conn.executemany(
+                    """
+                    INSERT INTO services (service_id, visit_id, quantity)
+                    VALUES (?, ?, ?)
+                    """,
+                    (
+                        (item.service_id, item.visit_id, item.quantity)
+                        for item in self.service_list.to_model()
+                    ),
+                )
+                wx.MessageBox("Thêm lượt khám thành công")
+        except sqlite3.Error as e:
+            wx.MessageBox(str(e), "Lỗi lưu thuốc, dịch vụ")
+        finally:
+            get_app().fetch_medicine_store()
+            self.visit_list.query(self.patient_id)
+            self.visit_id = self.visit_id
+            self.GetSizer().Layout()
 
     def on_visit_cancel_btn(self, _):
         self.visit_id = self.visit_id

@@ -7,6 +7,7 @@ from lib.db import connect
 from lib.wx_helper import get_main_frame
 import sys
 import os
+import time
 from typing import override
 from .main_frame import MainFrame as MainFrame
 
@@ -80,6 +81,8 @@ class App(wx.App):
             """
         )
         self.conn.close()
+        print("database closed")
+        time.sleep(1)
         return super().OnExit()
 
     def fetch_medicine_store(self):
